@@ -16,13 +16,13 @@ data class Palette(
 val Dark = Palette(
     bg = Color(0xFF0D1116), map = Color(0xFF10151B), panel = Color(0xFF181E26), surf2 = Color(0xFF232B35),
     line = Color(0xFF2E3844), road = Color(0xFF222B35), text = Color(0xFFF3F5F7), sub = Color(0xFFA9B2BD),
-    acc = Color(0xFFB8F25A), accOn = Color(0xFF111A05), accText = Color(0xFFB8F25A), warn = Color(0xFFFFB95C),
+    acc = Color(0xFFF9F88D), accOn = Color(0xFF16150A), accText = Color(0xFFF9F88D), warn = Color(0xFFFFB95C),
     sea = Color(0xFF0F1F2D), scrim = Color(0xB8040609), toast = Color(0xFFF3F5F7), toastOn = Color(0xFF12160F),
 )
 val Light = Palette(
     bg = Color(0xFFF4F5F2), map = Color(0xFFE8EBE4), panel = Color(0xFFFFFFFF), surf2 = Color(0xFFEEF0EB),
     line = Color(0xFFD3D8CF), road = Color(0xFFFFFFFF), text = Color(0xFF12160F), sub = Color(0xFF4B5548),
-    acc = Color(0xFFB8F25A), accOn = Color(0xFF111A05), accText = Color(0xFF3A7300), warn = Color(0xFF8A5200),
+    acc = Color(0xFFF9F88D), accOn = Color(0xFF16150A), accText = Color(0xFF6B6400), warn = Color(0xFF8A5200),
     sea = Color(0xFFD3E3EB), scrim = Color(0x8C12160F), toast = Color(0xFF12160F), toastOn = Color(0xFFF3F5F7),
 )
 
