@@ -1,5 +1,5 @@
 {
-  "_note": "좌표·방향은 OSRM 도로선 + TourAPI 명소 좌표에서 스크립트로 계산. verified=false 는 DEM 조망 판정 전.",
+  "_note": "조망 판정 스크립트(build_routes.py) 결과. 좌표는 OSRM 도로선에 스냅한 값, 좌우는 진행 방향 기준 계산, 조망은 Copernicus DEM 90m 시선 계산(지형만 반영). verified=true 는 모든 지점이 시선 검증을 통과한 경로.",
   "origin": {
     "name": "서울",
     "lat": 37.5665,
@@ -19,54 +19,65 @@
       "theme": "mountain",
       "minutes": 188,
       "curvy": true,
-      "verified": false,
+      "verified": true,
       "passPoints": [
         {
           "id": "jangsudae",
           "name": "설악산 장수대",
-          "lat": 38.118957,
-          "lng": 128.3409251,
+          "lat": 38.119339,
+          "lng": 128.341632,
           "side": "R",
           "noticeDistanceM": 600,
-          "guideText": "오른쪽 창밖, 설악산 장수대. 설악산 서북능선 자락의 쉼터입니다.",
+          "guideText": "설악산 서쪽, 한계리 계곡 위로 암봉이 이어지는 곳입니다.",
           "audioFile": "audio/jangsudae.mp3",
           "steerWaypoint": false
         },
         {
           "id": "hangyeryeong",
           "name": "한계령",
-          "lat": 38.0955,
-          "lng": 128.4045,
-          "side": "R",
+          "lat": 38.096351,
+          "lng": 128.406313,
+          "side": "L",
           "noticeDistanceM": 600,
-          "guideText": "오른쪽 창밖, 한계령. 해발 1,004미터, 설악산을 넘는 고갯길입니다.",
+          "guideText": "해발 약 930미터, 설악산을 넘는 고개입니다.",
           "audioFile": "audio/hangyeryeong.mp3",
           "steerWaypoint": true,
           "visit": {
             "name": "한계령휴게소",
-            "lat": 38.096251,
-            "lng": 128.406378
+            "lat": 38.096351,
+            "lng": 128.406313
           }
+        },
+        {
+          "id": "heullimgol",
+          "name": "설악산 흘림골",
+          "lat": 38.089074,
+          "lng": 128.421482,
+          "side": "R",
+          "noticeDistanceM": 600,
+          "guideText": "기암괴석과 폭포가 이어지는 남설악의 계곡입니다.",
+          "audioFile": "audio/heullimgol.mp3",
+          "steerWaypoint": false
         },
         {
           "id": "osaek",
           "name": "오색약수터",
-          "lat": 38.077165,
-          "lng": 128.4455244,
+          "lat": 38.078952,
+          "lng": 128.45104,
           "side": "R",
           "noticeDistanceM": 600,
-          "guideText": "오른쪽 창밖, 오색약수터. 톡 쏘는 탄산 약수로 이름난 계곡 마을입니다.",
+          "guideText": "탄산 약수가 솟는 오색 계곡 마을입니다.",
           "audioFile": "audio/osaek.mp3",
           "steerWaypoint": false
         },
         {
           "id": "naksansa",
           "name": "낙산사",
-          "lat": 38.1247989,
-          "lng": 128.6273275,
+          "lat": 38.123789,
+          "lng": 128.628021,
           "side": "L",
           "noticeDistanceM": 600,
-          "guideText": "왼쪽 창밖, 낙산사. 동해를 굽어보는 천년 고찰입니다.",
+          "guideText": "동해 바닷가 언덕 위의 절입니다.",
           "audioFile": "audio/naksansa.mp3",
           "steerWaypoint": false
         }
@@ -76,72 +87,77 @@
       "id": "sea",
       "name": "바다 경로",
       "theme": "sea",
-      "minutes": 202,
+      "minutes": 177,
       "curvy": false,
-      "verified": false,
+      "verified": true,
       "passPoints": [
         {
-          "id": "misiryeong",
-          "name": "울산바위 조망",
-          "lat": 38.213256,
-          "lng": 128.478508,
-          "side": "L",
+          "id": "daepohang",
+          "name": "대포항",
+          "lat": 38.174204,
+          "lng": 128.604559,
+          "side": "R",
           "noticeDistanceM": 600,
-          "guideText": "왼쪽 창밖, 울산바위 조망. 미시령 옛길의 대표 조망 지점, 울산바위가 솟아 있습니다.",
-          "audioFile": "audio/misiryeong.mp3",
-          "steerWaypoint": true,
+          "guideText": "고깃배와 수산시장이 늘어선 속초 남쪽 항구입니다.",
+          "audioFile": "audio/daepohang.mp3",
+          "steerWaypoint": false,
           "visit": {
-            "name": "미시령옛길 조망지",
-            "lat": 38.213551,
-            "lng": 128.478621
+            "name": "대포항",
+            "lat": 38.174204,
+            "lng": 128.604559
+          }
+        },
+        {
+          "id": "sokchobeach",
+          "name": "속초해수욕장",
+          "lat": 38.190007,
+          "lng": 128.599702,
+          "side": "R",
+          "noticeDistanceM": 600,
+          "guideText": "속초 시내와 맞닿은 넓은 백사장입니다.",
+          "audioFile": "audio/sokchobeach.mp3",
+          "steerWaypoint": false,
+          "visit": {
+            "name": "속초해수욕장",
+            "lat": 38.190007,
+            "lng": 128.599702
           }
         },
         {
           "id": "abaimaeul",
           "name": "아바이마을",
-          "lat": 38.2006834,
-          "lng": 128.5948893,
-          "side": "L",
-          "noticeDistanceM": 600,
-          "guideText": "왼쪽 창밖, 아바이마을. 실향민이 정착한 마을로 갯배가 유명합니다.",
-          "audioFile": "audio/abaimaeul.mp3",
-          "steerWaypoint": false
-        },
-        {
-          "id": "sokchobeach",
-          "name": "속초해수욕장",
-          "lat": 38.1905487,
-          "lng": 128.6019333,
+          "lat": 38.200763,
+          "lng": 128.594842,
           "side": "R",
           "noticeDistanceM": 600,
-          "guideText": "오른쪽 창밖, 속초해수욕장. 동해의 넓은 백사장이 펼쳐집니다.",
-          "audioFile": "audio/sokchobeach.mp3",
+          "guideText": "실향민이 모여 살며 생긴 마을로, 갯배로 건너다닙니다.",
+          "audioFile": "audio/abaimaeul.mp3",
           "steerWaypoint": true,
           "visit": {
-            "name": "속초해수욕장",
-            "lat": 38.190424,
-            "lng": 128.601946
+            "name": "아바이마을",
+            "lat": 38.200763,
+            "lng": 128.594842
           }
         },
         {
-          "id": "daepohang",
-          "name": "대포항",
-          "lat": 38.1748951,
-          "lng": 128.6074334,
+          "id": "mulchibeach",
+          "name": "물치해수욕장",
+          "lat": 38.153841,
+          "lng": 128.607787,
           "side": "L",
           "noticeDistanceM": 600,
-          "guideText": "왼쪽 창밖, 대포항. 싱싱한 회와 튀김으로 이름난 항구입니다.",
-          "audioFile": "audio/daepohang.mp3",
+          "guideText": "작은 물치항과 맞닿아 있는 해변입니다.",
+          "audioFile": "audio/mulchibeach.mp3",
           "steerWaypoint": false
         },
         {
           "id": "naksansa",
           "name": "낙산사",
-          "lat": 38.1247989,
-          "lng": 128.6273275,
+          "lat": 38.123789,
+          "lng": 128.628021,
           "side": "L",
           "noticeDistanceM": 600,
-          "guideText": "왼쪽 창밖, 낙산사. 동해를 굽어보는 천년 고찰입니다.",
+          "guideText": "동해 바닷가 언덕 위의 절입니다.",
           "audioFile": "audio/naksansa.mp3",
           "steerWaypoint": false
         }
