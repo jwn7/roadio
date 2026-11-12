@@ -95,10 +95,10 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 | 항목 | 값 |
 |---|---|
-| 시스템 이미지 | Pleos Connect AVD 2.x (`pleos_car_emulator`, x86_64), Android 14 (API 34) |
+| 시스템 이미지 | Pleos Connect v2.1.0 (`pleos_car_emulator`, x86_64, revision 1), Android 14 (API 34) |
 | 이미지 배포처 | `https://nexus-playground.pleos.ai/repository/raw-releases/connect-avd/2.x/crp-sys-img.xml` |
-| 이미지 세부 버전 | <!-- TODO: 설치 후 SDK Manager에 표시되는 revision 기입 --> 확인 후 기입 |
-| 화면 해상도 / 밀도 | <!-- TODO: AVD 설정의 해상도·dpi 기입 --> 확인 후 기입 |
+| 기기 프로필 | Pleos Connect v2.1.0 (이미지에 포함된 프로필) |
+| 화면 해상도 / 밀도 | 2560 × 1440, mdpi (160dpi), 12.8인치 |
 | AVD 설정 | RAM 4GB, Cold boot |
 
 화면 배치는 Pleos Connect의 창 규칙을 따른다.

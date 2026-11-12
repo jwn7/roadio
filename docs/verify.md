@@ -1,0 +1,51 @@
+# 에뮬레이터 확인 기록
+
+환경: Pleos Connect v2.1.0 에뮬레이터 (API 34, 2560 × 1440, 160dpi), NaviHelper SDK 3.0.5, 내비 서비스 3.0.4.
+
+## 2026-11-12 — 설치와 SDK 연결
+
+| 확인한 것 | 결과 |
+|---|---|
+| debug APK 설치 | 성공 |
+| `PlanActivity` 실행 | 성공. 화면 오른쪽 가로 두 칸에 표시됨 (왼쪽 한 칸은 차량 상태 화면) |
+| `NaviHelper.initialize` | `onServiceConnected`, 서비스 버전 3.0.4 |
+| `addListener` | 등록됨 (`registerCallbackV3`) |
+| `getDestinationInfo()` | `onDestinationInfo` 콜백이 옴 |
+
+### 내비에 목적지가 없을 때의 응답
+
+`onError`가 아니라 **빈 값이 담긴 `DestinationInfo`** 가 온다.
+
+```
+DestinationInfo(latitude=0.0, longitude=0.0, name=, address=, remainDistance=0, remainTime=0, tollFare=0, poiId=, poiSubId=null, poiProvider=)
+```
+
+- `PlanActivity`는 이름이 비어 있으면 값을 버리고 JSON의 목적지(낙산해변)를 그대로 보여 준다. 그래서 내비에 목적지가 없어도 화면에는 목적지가 있는 것처럼 보인다.
+- "목적지 없음"을 구분하려면 `name`이 비었는지 또는 좌표가 (0.0, 0.0)인지로 판단해야 한다.
+
+### 목적지 없이 "안내 시작"을 눌렀을 때
+
+내비에 목적지가 없는 상태에서 `removeWaypoint(ALL)` → `addWaypoint(...)`를 호출하면 `onError(CAUSE_SEARCH_ROUTE)`가 온다 (호출 후 약 0.15초).
+
+- 경유지는 목적지(경로)가 있어야 넣을 수 있다.
+- 앱은 이 오류를 로그로만 남기고 주행 화면(`DriveActivity`)으로 넘어간다. 경유지 등록이 실패해도 사용자는 알 수 없다.
+
+### 화면 배치
+
+`DriveActivity`가 세로 한 칸이 아니라 `PlanActivity`와 같은 오른쪽 넓은 영역에 떴다. 내비 옆 한 칸에 놓이는 배치는 아직 확인하지 못했다.
+
+## 아직 확인하지 못한 것 (할 일 2번)
+
+내비에 목적지를 설정한 뒤 확인한다.
+
+- [ ] 목적지가 있을 때 `getDestinationInfo()`가 돌려주는 값
+- [ ] `addWaypoint`에 `poiId`·`poiSubId`·`address`를 빈 문자열로 넣어도 경유지가 등록되는가
+- [ ] 경유지를 넣으면 경로가 실제로 그쪽(44번 국도)으로 바뀌는가
+- [ ] 경유지를 그냥 지나칠 때 `onWayPointArrived`가 오는가, 안내가 끊기거나 멈추는가
+- [ ] 안 되면 `requestRouteWithWaypoints()` 시도
+
+로그 보는 법:
+
+```bash
+adb logcat -s PleosNavi
+```
