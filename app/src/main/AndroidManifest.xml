@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature android:name="android.hardware.type.automotive" android:required="true" />
+
+    <!-- NaviHelper: 정보 조회(get*Info) / 경로·경유지 변경 -->
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
+    <!-- 위치: AAOS 표준 LocationManager 사용 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="false"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Roadio">
+
+        <!-- 1~3번 화면(목적지 확인·찾는 중·경로 결과): 가로, 창 두 칸 사용. 주행 중 사용 선언 없음 = 정차 중 전용 -->
+        <activity
+            android:name=".PlanActivity"
+            android:exported="true"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 5~7번 화면(주행): 방향 미지정 = 세로 한 칸, 내비게이션 옆에 놓임. 주행 중 사용 선언 -->
+        <activity
+            android:name=".DriveActivity"
+            android:exported="false">
+            <meta-data android:name="distractionOptimized" android:value="true" />
+        </activity>
+    </application>
+</manifest>

@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.Roadio" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#0D1116</item>
+    </style>
+</resources>

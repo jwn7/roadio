@@ -1,0 +1,45 @@
+{
+  "_note": "임시 데이터. 좌표·방향·소요 시간은 조망 판정 스크립트 결과로 교체할 것 (verified=false 인 값은 검증 전).",
+  "origin": { "name": "서울", "lat": 37.5665, "lng": 126.9780 },
+  "destination": { "name": "낙산해변", "region": "양양군", "lat": 38.1236, "lng": 128.6283 },
+  "fastMinutes": 90,
+  "routes": [
+    {
+      "id": "mountain",
+      "name": "산 경로",
+      "theme": "mountain",
+      "minutes": 125,
+      "curvy": true,
+      "verified": false,
+      "passPoints": [
+        {
+          "id": "jangsudae", "name": "설악산 장수대",
+          "lat": 38.1217, "lng": 128.2736, "side": "L",
+          "noticeDistanceM": 600,
+          "guideText": "설악산 서쪽 입구입니다. 계곡 위로 암벽이 이어집니다.",
+          "audioFile": "audio/jangsudae.mp3",
+          "steerWaypoint": false
+        },
+        {
+          "id": "hangyeryeong", "name": "한계령",
+          "lat": 38.0955, "lng": 128.4045, "side": "R",
+          "noticeDistanceM": 600,
+          "guideText": "해발 1,004m. 설악산을 넘는 고개입니다.",
+          "audioFile": "audio/hangyeryeong.mp3",
+          "steerWaypoint": true,
+          "visit": { "name": "한계령휴게소", "lat": 38.0955, "lng": 128.4045 }
+        },
+        {
+          "id": "osaek", "name": "오색",
+          "lat": 38.0760, "lng": 128.4490, "side": "L",
+          "noticeDistanceM": 600,
+          "guideText": "오색약수로 알려진 계곡 마을입니다.",
+          "audioFile": "audio/osaek.mp3",
+          "steerWaypoint": false
+        }
+      ]
+    },
+    { "id": "sea", "name": "바다 경로", "theme": "sea", "minutes": 155, "curvy": false, "verified": false, "passPoints": [] },
+    { "id": "fast", "name": "빠른 길", "theme": "fast", "minutes": 90, "curvy": false, "verified": true, "passPoints": [] }
+  ]
+}
