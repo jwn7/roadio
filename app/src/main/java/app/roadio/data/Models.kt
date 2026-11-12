@@ -35,5 +35,13 @@ data class RouteSet(
     val routes: List<ThemeRoute>,
 )
 
+/**
+ * 안내 문구에서 "오른쪽 창밖, 한계령. " 같은 앞머리를 떼고 설명만 남긴다.
+ * 방향과 이름은 화면과 TTS 가 따로 붙이므로, 문구에 들어 있으면 두 번 나온다.
+ * 앞머리가 정확히 "(왼쪽|오른쪽) 창밖, {이름}." 꼴일 때만 뗀다.
+ */
+fun descriptionOnly(guideText: String, name: String): String =
+    guideText.replaceFirst(Regex("^\\s*(왼쪽|오른쪽) 창밖,\\s*${Regex.escape(name)}\\.\\s*"), "")
+
 fun formatMinutes(min: Int): String =
     if (min < 60) "${min}분" else if (min % 60 == 0) "${min / 60}시간" else "${min / 60}시간 ${min % 60}분"

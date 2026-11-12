@@ -11,7 +11,7 @@
     {
       "file": "app/src/main/java/app/roadio/data/Models.kt",
       "pattern": "^data class PassPoint\\(",
-      "description": "**PassPoint = 창밖으로 보며 지나가는 지점.** 내비 경유지와는 다른 개념이다. 지점은 여러 개여도 되지만 경유지는 최대 2개(`NaviGateway.MAX_WAYPOINTS`).\n\n- `side`: 차 기준 왼쪽(L)/오른쪽(R) → \"오른쪽 창밖, 한계령\"\n- `noticeDistanceM`: 이 거리 안에 들어오면 안내 시작\n- `audioFile`: 녹음 파일 경로. null이면 TTS\n- `visit`: 들를 수 있는 곳. 없으면 null\n\n예: 한계령은 `side = R`, `noticeDistanceM = 600`, `visit = 한계령휴게소`.\n\n좌표는 임시값이다(`verified: false`). 실제 값은 조망 판정 스크립트 산출물로 교체한다."
+      "description": "**PassPoint = 창밖으로 보며 지나가는 지점.** 내비 경유지와는 다른 개념이다. 지점은 여러 개여도 되지만 경유지는 최대 2개(`NaviGateway.MAX_WAYPOINTS`).\n\n- `side`: 차 기준 왼쪽(L)/오른쪽(R) → \"오른쪽 창밖, 한계령\"\n- `noticeDistanceM`: 이 거리 안에 들어오면 안내 시작\n- `guideText`: 설명 문장만. JSON에 \"오른쪽 창밖, 한계령.\" 같은 앞머리가 있으면 읽을 때 `descriptionOnly()`가 뗀다(방향과 이름은 화면·TTS가 따로 붙임)\n- `audioFile`: 녹음 파일 경로. null이면 TTS\n- `visit`: 들를 수 있는 곳. 없으면 null\n\n예: 한계령은 `side = R`, `noticeDistanceM = 600`, `visit = 한계령휴게소`, `guideText = \"해발 1,004미터, 설악산을 넘는 고갯길입니다.\"`\n\n좌표는 스크립트 산출물이다(OSRM 도로선 + TourAPI). `verified: false`는 조망 판정 전이라는 뜻."
     },
     {
       "file": "app/src/main/java/app/roadio/data/Models.kt",
@@ -21,7 +21,7 @@
     {
       "file": "app/src/main/java/app/roadio/data/Models.kt",
       "pattern": "^data class ThemeRoute\\(",
-      "description": "**ThemeRoute = 테마 경로 하나, RouteSet = 한 출발지·목적지 쌍의 경로 묶음.**\n\n- `minutes`: 이 경로의 소요 시간. `RouteSet.fastMinutes`(가장 빠른 길)와 비교해 \"35분 더 걸려요\"를 만든다\n- `curvy`: 굽은 길 경고 표시 여부\n\n예: 산 경로 125분, 빠른 길 90분 → 차이 35분. `formatMinutes(125)` = \"2시간 5분\".\n\n원본은 `assets/routes_seoul_yangyang.json`, 읽는 곳은 `RouteRepository.kt`."
+      "description": "**ThemeRoute = 테마 경로 하나, RouteSet = 한 출발지·목적지 쌍의 경로 묶음.**\n\n- `minutes`: 이 경로의 소요 시간. `RouteSet.fastMinutes`(가장 빠른 길)와 비교해 \"35분 더 걸려요\"를 만든다\n- `curvy`: 굽은 길 경고 표시 여부\n\n예: 산 경로 188분, 빠른 길 151분 → 차이 37분. `formatMinutes(188)` = \"3시간 8분\". (`verified: false`인 경로의 시간은 검증 전 값)\n\n원본은 `assets/routes_seoul_yangyang.json`, 읽는 곳은 `RouteRepository.kt`."
     },
     {
       "file": "app/src/main/java/app/roadio/navi/PleosNavi.kt",

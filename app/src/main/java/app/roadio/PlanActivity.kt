@@ -69,7 +69,11 @@ class PlanActivity : ComponentActivity() {
     private fun startGuidance(navi: NaviGateway, routeId: String) {
         val route = RouteRepository(this).load().routes.first { it.id == routeId }
         // 경유지는 최대 2개. 길을 끌어오는 지점(steerWaypoint)만 등록하고, 슬롯 하나는 "들르기"용으로 남긴다.
-        val steer = route.passPoints.filter { it.steerWaypoint }.take(NaviGateway.MAX_WAYPOINTS - 1)
+        val wanted = route.passPoints.filter { it.steerWaypoint }
+        val steer = wanted.take(NaviGateway.MAX_WAYPOINTS - 1)
+        if (wanted.size > steer.size) {
+            android.util.Log.w("PlanActivity", "경유지로 등록하지 않는 지점: ${wanted.drop(steer.size).map { it.name }} (들르기용 슬롯을 남김)")
+        }
         navi.clearWaypoints()
         steer.forEachIndexed { i, p -> navi.addWaypoint(i + 1, app.roadio.data.Place(p.name, p.lat, p.lng)) }
 

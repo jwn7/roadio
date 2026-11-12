@@ -46,7 +46,7 @@ class RouteRepository(private val context: Context) {
             lng = o.getDouble("lng"),
             side = if (o.getString("side") == "R") Side.R else Side.L,
             noticeDistanceM = o.optInt("noticeDistanceM", 600),
-            guideText = o.optString("guideText"),
+            guideText = descriptionOnly(o.optString("guideText"), o.getString("name")),
             audioFile = o.optString("audioFile").ifBlank { null },
             steerWaypoint = o.optBoolean("steerWaypoint"),
             visit = o.optJSONObject("visit")?.let { place(it) },
