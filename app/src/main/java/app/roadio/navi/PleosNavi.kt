@@ -4,7 +4,10 @@ import ai.pleos.playground.navi.constants.NaviErrorCode
 import ai.pleos.playground.navi.constants.WaypointIndex
 import ai.pleos.playground.navi.data.DestinationInfo
 import ai.pleos.playground.navi.data.RequestWaypointInfo
+import ai.pleos.playground.navi.data.RouteStartInfo
 import ai.pleos.playground.navi.data.WaypointArrivedInfo
+import ai.pleos.playground.navi.data.WaypointChangedInfo
+import ai.pleos.playground.navi.data.WaypointInfo
 import ai.pleos.playground.navi.helper.NaviHelper
 import ai.pleos.playground.navi.helper.listener.NaviHelperEventListener
 import android.content.Context
@@ -41,6 +44,31 @@ class PleosNavi(context: Context) : NaviGateway {
         override fun onWayPointArrived(waypointArrivedInfo: WaypointArrivedInfo) {
             // 확인할 것: 경유지를 "지나갈" 때 이 콜백이 오는지, 안내가 끊기는지
             Log.d(tag, "onWayPointArrived $waypointArrivedInfo")
+        }
+
+        // 아래는 경유지 동작 확인용 로그(docs/verify.md). `adb logcat -s PleosNavi` 로 본다.
+        override fun onWaypointChanged(waypointChangedInfo: WaypointChangedInfo) {
+            Log.d(tag, "onWaypointChanged $waypointChangedInfo")
+        }
+
+        override fun onWayPointInfo(waypointInfoList: List<WaypointInfo>) {
+            Log.d(tag, "onWayPointInfo $waypointInfoList")
+        }
+
+        override fun onRouteStarted(routeStartInfo: RouteStartInfo) {
+            Log.d(tag, "onRouteStarted $routeStartInfo")
+        }
+
+        override fun onRoutingCompleted() {
+            Log.d(tag, "onRoutingCompleted")
+        }
+
+        override fun onReRouteEnded() {
+            Log.d(tag, "onReRouteEnded")
+        }
+
+        override fun onRouteCancelled() {
+            Log.d(tag, "onRouteCancelled")
         }
 
         override fun onError(errorCode: NaviErrorCode) {
