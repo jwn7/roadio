@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Theme.kt 의 Dark.bg 와 같은 값 -->
-    <color name="ic_launcher_background">#0D1116</color>
+    <!-- 밝은 배경: Theme.kt 의 강조색(acc)과 같은 값 -->
+    <color name="ic_launcher_background">#F9F88D</color>
 </resources>

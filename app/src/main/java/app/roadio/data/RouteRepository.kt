@@ -9,10 +9,21 @@ import org.json.JSONObject
  */
 class RouteRepository(private val context: Context) {
 
-    fun load(file: String = "routes_seoul_yangyang.json"): RouteSet =
-        parse(context.assets.open(file).bufferedReader().use { it.readText() })
+    fun load(file: String = "routes_seoul_yangyang.json"): RouteSet {
+        val set = parse(read(file))
+        // 긴 설명은 경로 스크립트 산출물과 따로 둔다(narrations.json). 없으면 화면 문구를 그대로 읽는다.
+        val narrations = runCatching { parseNarrations(read(NARRATIONS)) }.getOrDefault(emptyMap())
+        if (narrations.isEmpty()) return set
+        return set.copy(routes = set.routes.map { r ->
+            r.copy(passPoints = r.passPoints.map { p -> narrations[p.id]?.let { p.copy(narration = it) } ?: p })
+        })
+    }
+
+    private fun read(file: String) = context.assets.open(file).bufferedReader().use { it.readText() }
 
     companion object {
+        const val NARRATIONS = "narrations.json"
+
         fun parse(text: String): RouteSet {
             val o = JSONObject(text)
             val routes = o.getJSONArray("routes")
@@ -22,6 +33,12 @@ class RouteRepository(private val context: Context) {
                 fastMinutes = o.getInt("fastMinutes"),
                 routes = (0 until routes.length()).map { route(routes.getJSONObject(it)) },
             )
+        }
+
+        /** { "narrations": { "지점 id": "긴 설명", … } } → id 별 설명. 빈 문자열은 뺀다 */
+        fun parseNarrations(text: String): Map<String, String> {
+            val o = JSONObject(text).optJSONObject("narrations") ?: return emptyMap()
+            return o.keys().asSequence().map { it to o.optString(it).trim() }.filter { it.second.isNotEmpty() }.toMap()
         }
 
         private fun place(o: JSONObject) =

@@ -11,7 +11,7 @@
     {
       "file": "app/src/main/java/app/roadio/data/Models.kt",
       "pattern": "^data class PassPoint\\(",
-      "description": "**PassPoint = 창밖으로 보며 지나가는 지점.** 내비 경유지와는 다른 개념이다. 지점은 여러 개여도 되지만 경유지는 최대 2개(`NaviGateway.MAX_WAYPOINTS`).\n\n- `side`: 차 기준 왼쪽(L)/오른쪽(R) → \"오른쪽 창밖, 한계령\"\n- `noticeDistanceM`: 이 거리 안에 들어오면 안내 시작\n- `guideText`: 설명 문장만. JSON에 \"오른쪽 창밖, 한계령.\" 같은 앞머리가 있으면 읽을 때 `descriptionOnly()`가 뗀다(방향과 이름은 화면·TTS가 따로 붙임)\n- `audioFile`: 녹음 파일 경로. null이면 TTS\n- `visit`: 들를 수 있는 곳. 없으면 null\n\n예: 한계령은 `side = L`, `noticeDistanceM = 600`, `visit = 한계령휴게소`, `guideText = \"해발 약 930미터, 설악산을 넘는 고개입니다.\"`\n\n좌표는 스크립트(`build_routes.py`) 산출물이다. OSRM 도로선에 맞춘 값이고, 좌우는 진행 방향 기준으로 계산한다. `verified: true`는 모든 지점이 시선 검증(지형만 반영)을 통과한 경로라는 뜻."
+      "description": "**PassPoint = 창밖으로 보며 지나가는 지점.** 내비 경유지와는 다른 개념이다. 지점은 여러 개여도 되지만 경유지는 최대 2개(`NaviGateway.MAX_WAYPOINTS`).\n\n- `side`: 차 기준 왼쪽(L)/오른쪽(R) → \"오른쪽 창밖, 한계령\"\n- `noticeDistanceM`: 이 거리 안에 들어오면 안내 시작\n- `guideText`: 설명 문장만. JSON에 \"오른쪽 창밖, 한계령.\" 같은 앞머리가 있으면 읽을 때 `descriptionOnly()`가 뗀다(방향과 이름은 화면·TTS가 따로 붙임)\n- `narration`: 음성으로만 읽는 긴 설명(15~25초 분량). 화면에는 쓰지 않는다. `assets/narrations.json`에서 지점 id로 찾아 붙이고, 없으면 `guideText`와 같다\n- `audioFile`: 녹음 파일 경로. null이면 TTS가 `narration`을 읽는다\n- `visit`: 들를 수 있는 곳. 없으면 null\n\n예: 한계령은 `side = L`, `noticeDistanceM = 600`, `visit = 한계령휴게소`, `guideText = \"해발 약 930미터, 설악산을 넘는 고개입니다.\"`\n\n좌표는 스크립트(`build_routes.py`) 산출물이다. OSRM 도로선에 맞춘 값이고, 좌우는 진행 방향 기준으로 계산한다. `verified: true`는 모든 지점이 시선 검증(지형만 반영)을 통과한 경로라는 뜻."
     },
     {
       "file": "app/src/main/java/app/roadio/data/Models.kt",
@@ -27,6 +27,16 @@
       "file": "app/src/main/java/app/roadio/navi/PleosNavi.kt",
       "pattern": "private fun DestinationInfo\\.toPlace\\(\\)",
       "description": "**SDK 타입 → 앱 타입 경계.** 내비 SDK의 `DestinationInfo`를 `Place`로 바꾸는 유일한 곳이다. 앱의 나머지 코드는 SDK 타입을 모른다(`NaviGateway` 인터페이스만 안다).\n\n- `DestinationInfo`의 `name`, `latitude`, `longitude`는 모두 non-null (navi-data 3.0.4 소스로 확인)\n- `address`, `remainDistance`, `remainTime`, `poiId`도 있지만 지금은 쓰지 않는다\n\n반대 방향(`Place` → `RequestWaypointInfo`)은 같은 파일의 `addWaypoint`에 있다. `poiId`·`poiSubId`·`address`는 빈 문자열로 넣는데, 에뮬레이터에서 실제로 등록되는지는 아직 확인 전."
+    },
+    {
+      "file": "app/src/main/java/app/roadio/navi/PleosNavi.kt",
+      "pattern": "override fun startRoute\\(destination: Place, waypoints: List<Place>\\)",
+      "description": "**앱 타입 → SDK 타입, 안내 시작.** \"안내 시작\"을 누르면 목적지와 경유지를 한 번에 내비에 넘긴다. 내비에 목적지가 미리 잡혀 있지 않아도 된다.\n\n- `to`: 목적지 `Place` → `RouteInfo`\n- `via`: `steerWaypoint` 지점 → `RequestWaypointInfo` (최대 `MAX_WAYPOINTS` = 2개, 지금은 1개만 넘김)\n- 경유지가 없으면(빠른 길) `requestRoute`, 있으면 `requestRouteWithWaypoints`\n\n예: 산 경로 → `to = 낙산해변`, `via = [한계령(FIRST)]`.\n\n이전에는 `addWaypoint`만 호출해서 내비에 경로가 없으면 `CAUSE_SEARCH_ROUTE`로 실패했다. 근거는 `docs/verify.md`."
+    },
+    {
+      "file": "app/src/main/java/app/roadio/GuideService.kt",
+      "pattern": "^class GuideService : Service\\(\\)",
+      "description": "**안내는 화면이 아니라 서비스가 돌린다.** 안내 시작을 누르면 내비가 앞으로 나와 우리 화면이 가려지고, 몇 초 뒤 시스템이 가려진 앱의 프로세스를 얼린다. 포그라운드 서비스는 얼리지 않으므로 여기서 위치 → 판정(`DriveEngine`) → 음성(`Narrator`)을 돌린다.\n\n- `state`: 지금 안내 상태(`StateFlow<DriveState?>`). `DriveActivity`는 이 값을 보고 그리기만 한다\n- `activeRoute`: 안내 중인 경로 id. `PlanActivity`가 이 값을 보고, 안내 중이면 주행 화면으로 보낸다\n- `LAST_AUDIO_MS` = 30000: 마지막 지점을 지난 뒤 마지막 음성이 끝날 시간을 두고 서비스를 내린다\n\n예: 산 경로 시작 → `activeRoute = \"mountain\"`, `state = Approaching(0, 장수대, …)` → 600m 안에 들어오면 `Guiding(0, 장수대)`과 함께 음성 1회.\n\n실제로 동결을 피하는지는 에뮬레이터 확인 전이다(`docs/verify.md`)."
     }
   ]
 }

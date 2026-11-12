@@ -1,5 +1,6 @@
 package app.roadio.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,6 +30,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,45 +62,85 @@ private fun PlanFrame(set: RouteSet, selected: ThemeRoute?, panel: @Composable C
 }
 
 @Composable
-private fun DestinationHeader(dest: Place, onBack: (() -> Unit)? = null) {
+private fun DestinationHeader(dest: Place, onBack: (() -> Unit)? = null, onToggleTheme: (() -> Unit)? = null) {
     val c = LocalPalette.current
-    Row(verticalAlignment = Alignment.Top) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         if (onBack != null) {
             Box(Modifier.size(88.dp).clip(RoundedCornerShape(20.dp)).clickable(onClick = onBack), contentAlignment = Alignment.Center) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "이전", tint = c.text, modifier = Modifier.size(44.dp))
             }
             Spacer(Modifier.width(4.dp))
         }
-        Column {
+        Column(Modifier.weight(1f)) {
             Text("목적지", color = c.sub, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
             Text(dest.name, color = c.text, fontSize = 60.sp, fontWeight = FontWeight.ExtraBold)
+        }
+        if (onToggleTheme != null) {
+            val toDark = !ThemeSetting.dark
+            Box(
+                Modifier.size(88.dp).clip(RoundedCornerShape(20.dp))
+                    .clickable(onClickLabel = if (toDark) "어두운 화면으로 바꾸기" else "밝은 화면으로 바꾸기", onClick = onToggleTheme),
+                contentAlignment = Alignment.Center,
+            ) { ThemeIcon(moon = toDark, color = c.sub, cutout = c.panel) }
+        }
+    }
+}
+
+/** 화면 전환 버튼 그림. 밝은 화면에서는 달(어두운 화면으로), 어두운 화면에서는 해(밝은 화면으로). */
+@Composable
+private fun ThemeIcon(moon: Boolean, color: Color, cutout: Color) {
+    Canvas(Modifier.size(44.dp)) {
+        val r = size.minDimension / 2
+        if (moon) {
+            drawCircle(color, radius = r * 0.72f)
+            drawCircle(cutout, radius = r * 0.62f, center = center + Offset(r * 0.36f, -r * 0.30f))
+        } else {
+            drawCircle(color, radius = r * 0.36f)
+            for (i in 0 until 8) {
+                val a = Math.toRadians(i * 45.0)
+                val dir = Offset(kotlin.math.cos(a).toFloat(), kotlin.math.sin(a).toFloat())
+                drawLine(color, center + dir * (r * 0.62f), center + dir * (r * 0.92f), strokeWidth = r * 0.16f, cap = StrokeCap.Round)
+            }
         }
     }
 }
 
 // ---------- 1. 목적지 확인 ----------
 @Composable
-fun StartScreen(set: RouteSet, dest: Place, picked: Set<String>, onToggle: (String) -> Unit, onFind: () -> Unit) {
+fun StartScreen(set: RouteSet, dest: Place, picked: Set<String>, onToggle: (String) -> Unit, onToggleTheme: () -> Unit, onFind: () -> Unit) {
     val c = LocalPalette.current
     PlanFrame(set, null) {
-        DestinationHeader(dest)
+        DestinationHeader(dest, onToggleTheme = onToggleTheme)
         Text(
             listOf(dest.region, formatMinutes(set.fastMinutes)).filter { it.isNotBlank() }.joinToString(" · "),
             color = c.sub, fontSize = 28.sp, modifier = Modifier.padding(top = 4.dp),
         )
         Text("가는 길에 볼 것", color = c.sub, fontSize = 26.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 36.dp))
+        // 경로 데이터가 있는 테마만 고를 수 있다. 없는 테마는 "준비 중"으로 보이고 눌리지 않는다.
+        val ready = set.routes.map { it.theme }.toSet()
         THEMES.forEachIndexed { i, (id, name) ->
-            val on = id in picked
+            val available = id in ready
+            val on = available && id in picked
             Row(
-                Modifier.fillMaxWidth().height(120.dp).clickable { onToggle(id) },
+                Modifier.fillMaxWidth().height(120.dp).then(if (available) Modifier.clickable { onToggle(id) } else Modifier),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(name, color = c.text, fontSize = 36.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                Box(
-                    Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
-                        .then(if (on) Modifier.background(c.acc) else Modifier.border(3.dp, c.line, RoundedCornerShape(12.dp))),
-                    contentAlignment = Alignment.Center,
-                ) { if (on) Icon(Icons.Filled.Check, contentDescription = "선택됨", tint = c.accOn, modifier = Modifier.size(32.dp)) }
+                Text(
+                    name, color = if (available) c.text else c.sub.copy(alpha = 0.6f), fontSize = 36.sp,
+                    fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold, modifier = Modifier.weight(1f),
+                )
+                if (available) {
+                    Box(
+                        Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+                            .then(if (on) Modifier.background(c.acc) else Modifier.border(3.dp, c.line, RoundedCornerShape(12.dp))),
+                        contentAlignment = Alignment.Center,
+                    ) { if (on) Icon(Icons.Filled.Check, contentDescription = "선택됨", tint = c.accOn, modifier = Modifier.size(32.dp)) }
+                } else {
+                    Text(
+                        "준비 중", color = c.sub, fontSize = 26.sp, fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(c.surf2).padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
             }
             if (i < THEMES.lastIndex) Rule()
         }
@@ -152,12 +198,25 @@ fun RouteScreen(set: RouteSet, dest: Place, selectedId: String, onSelect: (Strin
                         contentAlignment = Alignment.Center,
                     ) { if (on) Icon(Icons.Filled.Check, contentDescription = "선택됨", tint = c.accOn, modifier = Modifier.size(28.dp)) }
                     Text(r.name, color = c.text, fontSize = 36.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                    Text(formatMinutes(r.minutes), color = if (on) c.text else c.sub, fontSize = 36.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold)
+                    // 사람들이 실제로 비교하는 것은 빠른 길보다 얼마나 더 걸리는가다. 그래서 차이를 크게, 전체 시간을 작게.
+                    val extra = r.minutes - set.fastMinutes
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            if (extra > 0) "+${formatMinutes(extra)}" else "가장 빠름",
+                            color = if (on) c.text else c.sub, fontSize = 36.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold,
+                        )
+                        Text(formatMinutes(r.minutes), color = c.sub, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
+                    }
                 }
                 if (on && r.passPoints.isNotEmpty()) {
                     Column(Modifier.padding(start = 64.dp, bottom = 20.dp)) {
                         r.passPoints.forEachIndexed { n, p -> PassRow(n + 1, p) }
-                        if (r.curvy) Text("굽은 길 많음", color = c.warn, fontSize = 26.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 10.dp))
+                        if (r.curvy) {
+                            Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                CurvyIcon(c.warn)
+                                Text("굽은 길 많음", color = c.warn, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                 }
             }
@@ -165,6 +224,21 @@ fun RouteScreen(set: RouteSet, dest: Place, selectedId: String, onSelect: (Strin
         }
         Spacer(Modifier.weight(1f))
         PrimaryButton("안내 시작", Modifier.fillMaxWidth(), onClick = onStart)
+    }
+}
+
+/** 굽은 길 표시: S 자로 휘는 길 */
+@Composable
+private fun CurvyIcon(color: Color) {
+    Canvas(Modifier.size(32.dp)) {
+        val w = size.width
+        val h = size.height
+        val path = Path().apply {
+            moveTo(w * 0.33f, h * 0.90f)
+            cubicTo(w * 0.33f, h * 0.60f, w * 0.72f, h * 0.66f, w * 0.72f, h * 0.44f)
+            cubicTo(w * 0.72f, h * 0.24f, w * 0.33f, h * 0.30f, w * 0.33f, h * 0.08f)
+        }
+        drawPath(path, color, style = Stroke(w * 0.12f, cap = StrokeCap.Round))
     }
 }
 

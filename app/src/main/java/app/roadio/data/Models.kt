@@ -17,6 +17,8 @@ data class PassPoint(
     /** true면 이 지점을 내비 경유지로 등록해 경로를 이 길로 끌어온다 */
     val steerWaypoint: Boolean,
     val visit: Place?,
+    /** 음성으로 읽는 긴 설명(15~25초 분량). 없으면 화면 문구(guideText)와 같다. 화면에는 쓰지 않는다 */
+    val narration: String = guideText,
 )
 
 data class ThemeRoute(

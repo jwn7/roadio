@@ -13,7 +13,12 @@ interface NaviGateway {
     fun stop()
     /** 내비에 설정된 목적지. 없으면 null */
     fun requestDestination(onResult: (Place?) -> Unit)
-    /** slot: 1 또는 2 (Pleos 내비 경유지는 최대 2개) */
+    /**
+     * 목적지와 경유지를 한 번에 넘겨 경로 안내를 시작한다.
+     * 내비에 목적지가 미리 잡혀 있지 않아도 된다. waypoints 는 앞에서부터 최대 [MAX_WAYPOINTS]개만 쓴다.
+     */
+    fun startRoute(destination: Place, waypoints: List<Place>)
+    /** 안내 중인 경로에 경유지를 더한다. slot: 1 또는 2 (Pleos 내비 경유지는 최대 2개). 경로가 없으면 실패한다 */
     fun addWaypoint(slot: Int, place: Place)
     fun clearWaypoints()
 
@@ -27,6 +32,10 @@ class FakeNavi(private val destination: Place?) : NaviGateway {
     override fun start(onReady: (Boolean) -> Unit) = onReady(true)
     override fun stop() {}
     override fun requestDestination(onResult: (Place?) -> Unit) = onResult(destination)
+    override fun startRoute(destination: Place, waypoints: List<Place>) {
+        this.waypoints.fill(null)
+        waypoints.take(NaviGateway.MAX_WAYPOINTS).forEachIndexed { i, p -> this.waypoints[i] = p }
+    }
     override fun addWaypoint(slot: Int, place: Place) { waypoints[slot - 1] = place }
     override fun clearWaypoints() { waypoints.fill(null) }
 }

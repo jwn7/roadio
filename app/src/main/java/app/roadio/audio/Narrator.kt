@@ -39,7 +39,8 @@ class Narrator(private val context: Context) {
         } else if (ttsReady) {
             tts.language = Locale.KOREAN
             val side = if (point.side.name == "R") "오른쪽" else "왼쪽"
-            tts.speak("$side 창밖, ${point.name}. ${point.guideText}", TextToSpeech.QUEUE_FLUSH, null, point.id)
+            // 녹음 파일이 없을 때는 긴 설명(narration)을 읽는다. 긴 설명이 없으면 화면 문구와 같다.
+            tts.speak("$side 창밖, ${point.name}. ${point.narration}", TextToSpeech.QUEUE_FLUSH, null, point.id)
         }
     }
 

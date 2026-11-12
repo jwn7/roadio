@@ -1,12 +1,15 @@
 package app.roadio.ui
 
-import androidx.compose.foundation.isSystemInDarkTheme
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-/** 디자인 시안(v4)의 색. Pleos 공식 색상값을 받으면 여기만 바꾼다. */
+/** 디자인 시안의 색. Pleos 공식 색상값을 받으면 여기만 바꾼다. */
 data class Palette(
     val bg: Color, val map: Color, val panel: Color, val surf2: Color, val line: Color, val road: Color,
     val text: Color, val sub: Color, val acc: Color, val accOn: Color, val accText: Color, val warn: Color,
@@ -26,9 +29,31 @@ val Light = Palette(
     sea = Color(0xFFD3E3EB), scrim = Color(0x8C12160F), toast = Color(0xFF12160F), toastOn = Color(0xFFF3F5F7),
 )
 
-val LocalPalette = staticCompositionLocalOf { Dark }
+/**
+ * 화면 밝기 설정. 기본은 밝은 화면이고, 사용자가 바꾸면 그 값을 기억한다.
+ * 기기의 어두운 화면 설정은 따르지 않는다(두 Activity 가 같은 값을 본다).
+ */
+object ThemeSetting {
+    private const val PREFS = "roadio"
+    private const val KEY_DARK = "dark"
+
+    var dark by mutableStateOf(false)
+        private set
+
+    /** Activity 가 화면을 그리기 전에 한 번 부른다. */
+    fun load(context: Context) {
+        dark = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_DARK, false)
+    }
+
+    fun toggle(context: Context) {
+        dark = !dark
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_DARK, dark).apply()
+    }
+}
+
+val LocalPalette = staticCompositionLocalOf { Light }
 
 @Composable
 fun RoadioTheme(content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalPalette provides if (isSystemInDarkTheme()) Dark else Light, content = content)
+    CompositionLocalProvider(LocalPalette provides if (ThemeSetting.dark) Dark else Light, content = content)
 }

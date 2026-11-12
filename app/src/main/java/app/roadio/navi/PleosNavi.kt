@@ -4,7 +4,9 @@ import ai.pleos.playground.navi.constants.NaviErrorCode
 import ai.pleos.playground.navi.constants.WaypointIndex
 import ai.pleos.playground.navi.data.DestinationInfo
 import ai.pleos.playground.navi.data.RequestWaypointInfo
+import ai.pleos.playground.navi.data.RouteInfo
 import ai.pleos.playground.navi.data.RouteStartInfo
+import ai.pleos.playground.navi.data.RouteWithWaypointsRequest
 import ai.pleos.playground.navi.data.WaypointArrivedInfo
 import ai.pleos.playground.navi.data.WaypointChangedInfo
 import ai.pleos.playground.navi.data.WaypointInfo
@@ -101,19 +103,35 @@ class PleosNavi(context: Context) : NaviGateway {
         helper.getDestinationInfo()
     }
 
-    override fun addWaypoint(slot: Int, place: Place) {
-        helper.addWaypoint(
-            RequestWaypointInfo(
-                latitude = place.lat,
-                longitude = place.lng,
-                waypointIndex = if (slot == 1) WaypointIndex.FIRST else WaypointIndex.SECOND,
-                poiId = "",
-                poiName = place.name,
-                poiSubId = "",
-                address = "",
-            )
+    override fun startRoute(destination: Place, waypoints: List<Place>) {
+        val to = RouteInfo(
+            latitude = destination.lat,
+            longitude = destination.lng,
+            poiName = destination.name,
+            poiId = "",
+            address = "",
+            poiSubId = "",
         )
+        val via = waypoints.take(NaviGateway.MAX_WAYPOINTS).mapIndexed { i, p -> waypointInfo(i + 1, p) }
+        Log.d(tag, "startRoute ${destination.name} via ${via.map { it.poiName }}")
+        // 경유지가 없으면(빠른 길) 목적지만 요청한다.
+        if (via.isEmpty()) helper.requestRoute(to)
+        else helper.requestRouteWithWaypoints(RouteWithWaypointsRequest(destination = to, waypoints = via))
     }
+
+    override fun addWaypoint(slot: Int, place: Place) {
+        helper.addWaypoint(waypointInfo(slot, place))
+    }
+
+    private fun waypointInfo(slot: Int, place: Place) = RequestWaypointInfo(
+        latitude = place.lat,
+        longitude = place.lng,
+        waypointIndex = if (slot == 1) WaypointIndex.FIRST else WaypointIndex.SECOND,
+        poiId = "",
+        poiName = place.name,
+        poiSubId = "",
+        address = "",
+    )
 
     override fun clearWaypoints() {
         helper.removeWaypoint(WaypointIndex.ALL)

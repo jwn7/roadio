@@ -1,26 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 앱 아이콘 전경: 굽은 길과 출발점·지점. 108dp 중 가운데 66dp(21~87)가 안전 영역이다. -->
+<!-- 앱 아이콘 전경: 한 목적지로 가는 세 갈래 길. 굵은 길이 고른 테마 경로다.
+     108dp 중 가운데 66dp(21~87)가 안전 영역이다. 배경은 ic_launcher_background(밝은 노랑). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- 길 -->
+    <!-- 다른 길 두 갈래 -->
     <path
-        android:pathData="M35,75 C35,50 73,60 73,35"
-        android:strokeColor="#F9F88D"
+        android:pathData="M33,76 C30,50 50,34 76,34"
+        android:strokeColor="#A8A75E"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M33,76 C58,80 76,62 76,34"
+        android:strokeColor="#A8A75E"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <!-- 고른 길 -->
+    <path
+        android:pathData="M33,76 C36,52 70,62 76,34"
+        android:strokeColor="#16150A"
         android:strokeWidth="7"
         android:strokeLineCap="round"
         android:fillColor="#00000000" />
     <!-- 출발점 -->
     <path
-        android:pathData="M29,75 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"
-        android:fillColor="#F3F5F7" />
-    <!-- 창밖으로 보는 지점 -->
-    <path
-        android:pathData="M64,35 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0"
-        android:fillColor="#F9F88D" />
-    <path
-        android:pathData="M69.5,35 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0"
+        android:pathData="M27,76 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"
         android:fillColor="#16150A" />
+    <!-- 목적지 -->
+    <path
+        android:pathData="M66,34 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"
+        android:fillColor="#16150A" />
+    <path
+        android:pathData="M72,34 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0"
+        android:fillColor="#F9F88D" />
 </vector>

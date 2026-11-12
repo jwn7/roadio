@@ -10,6 +10,16 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 창밖 안내: 내비게이션에 가려져도 위치 판정과 음성이 이어지도록 포그라운드 서비스로 돌린다 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 안내를 마친 뒤 내비게이션 화면으로 돌아가기 위해 내비 앱을 찾는다 -->
+    <queries>
+        <package android:name="ai.umos.maps.android.navigation.app" />
+    </queries>
 
     <application
         android:allowBackup="false"
@@ -36,5 +46,10 @@
             android:exported="false">
             <meta-data android:name="distractionOptimized" android:value="true" />
         </activity>
+
+        <service
+            android:name=".GuideService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback|location" />
     </application>
 </manifest>

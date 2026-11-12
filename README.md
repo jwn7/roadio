@@ -14,6 +14,7 @@
 | 5 | 주행 화면 (다음 지점까지 거리) | `DriveActivity` | 주행 중 |
 | 6 | 안내 중 (좌우 방향 + 음성) | `DriveActivity` | 주행 중 |
 | 7 | 들러보기 확인 | `DriveActivity` | 주행 중 |
+| 8 | 모든 곳을 지남 (지나온 곳 요약, 내비게이션으로 돌아가기) | `DriveActivity` | 주행 중 |
 
 ## 실행 방법
 
@@ -33,9 +34,18 @@ macOS / Linux:
 
 Android Studio(Koala 이상)에서는 폴더를 열고 Gradle sync 후 실행하면 된다.
 
+**프로젝트 경로에 한글이 있으면 Windows에서 빌드가 거부된다.** 영문 경로에 두거나 임시 드라이브로 연결해서 빌드한다.
+
+```powershell
+subst R: "C:\한글이 든\경로\roadio-app"
+R:
+.\gradlew.bat assembleDebug
+subst R: /d
+```
+
 ### 2. 에뮬레이터에 설치
 
-Pleos Connect 에뮬레이터를 Cold boot로 띄운 뒤 설치한다.
+Pleos Connect 에뮬레이터를 Cold boot로 띄운 뒤 설치한다. 첫 부팅에서 화면이 하얗거나 검게 나오면 에뮬레이터를 한 번 재부팅한다(차량 시스템 서비스가 늦게 뜨는 경우가 있다).
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
@@ -43,10 +53,10 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ### 3. 사용 순서
 
-1. 에뮬레이터의 내비게이션에서 목적지를 설정하고 안내를 시작한다. (예시 데이터는 서울 → 양양 낙산해변 구간)
-2. 앱 목록에서 Roadio를 실행한다. 목적지가 첫 화면에 표시된다.
-3. 테마를 고르고 경로 결과에서 "안내 시작"을 누른다. 경유지가 내비게이션에 등록되고 주행 화면으로 넘어간다.
-4. 주행 화면에서 지점에 가까워지면 안내가 나온다. "들러보기"를 누르면 해당 장소가 경유지로 추가된다.
+1. 앱 목록에서 Roadio를 실행한다. 내비게이션에 목적지가 잡혀 있으면 그 목적지가, 없으면 예시 목적지(양양 낙산해변)가 첫 화면에 표시된다.
+2. 테마를 고르고 "경로 찾기"를 누른다. 빠른 길과 테마 경로가 소요 시간, 지나가는 지점과 함께 표시된다.
+3. 경로를 고르고 "안내 시작"을 누른다. 앱이 목적지와 경유지를 내비게이션에 넘겨 그 길로 안내가 시작된다.
+4. 지점에 가까워지면 음성 안내가 나온다. 주행 화면에서 "들르기"를 누르면 해당 장소가 경유지로 추가된다.
 
 ### 4. 단위 테스트
 
@@ -73,13 +83,16 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | 권한 | 용도 |
 |---|---|
 | `pleos.car.permission.NAVI_ROUTE` | 목적지 등 내비게이션 정보 조회 |
-| `pleos.car.permission.NAVI_ROUTE_SEARCH` | 경유지 추가·삭제 |
+| `pleos.car.permission.NAVI_ROUTE_SEARCH` | 경로 요청, 경유지 추가 |
 | `android.permission.ACCESS_FINE_LOCATION` | 현재 위치 (Android Automotive 표준 위치 API) |
+| `android.permission.FOREGROUND_SERVICE` 외 2개 | 내비게이션에 가려진 동안에도 안내를 이어 가기 위한 서비스 |
+| `android.permission.POST_NOTIFICATIONS` | 안내 중임을 알리는 상단 알림 |
 
 ### 실행 전 확인
 
-- 내비게이션에 **목적지가 설정되어 있어야** 한다. 앱은 목적지를 직접 입력받지 않고 내비게이션에서 가져온다.
-- 내비게이션 경유지는 최대 2개다. 앱은 경로를 바꾸는 데 필요한 지점만 경유지로 등록한다.
+- 내비게이션에 목적지를 미리 잡지 않아도 된다. "안내 시작"에서 앱이 목적지와 경유지를 함께 요청한다 (`requestRouteWithWaypoints`).
+- 내비게이션 경유지는 최대 2개다. 앱은 경로를 바꾸는 데 필요한 지점 1곳만 등록하고, 한 칸은 "들르기"용으로 남긴다.
+- "안내 시작" 뒤에는 내비게이션이 화면 오른쪽 영역을 쓴다. 창밖 안내(위치 판정과 음성)는 포그라운드 서비스 `GuideService`가 맡아 화면이 가려져도 이어지며, 하단 바에서 앱으로 돌아오면 주행 화면이 지금 상태로 보인다.
 - 위치 값은 에뮬레이터의 Extended controls > Location에서 넣을 수 있다.
 
 ### 개발용 스위치
@@ -113,7 +126,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ## APK 파일 위치
 
 <!-- TODO: release 빌드 후 실제 파일명으로 교체 -->
-`apk/팀명_Roadio_release.apk` — release 빌드 후 추가 예정.
+`apk/LLQ_Roadio_release.apk` — release 빌드 후 추가 예정.
 
 ## 구조
 
@@ -121,6 +134,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 |---|---|
 | `data/Models.kt`, `RouteRepository.kt` | 경로 JSON 읽기 |
 | `drive/DriveEngine.kt` | 위치 → 접근 중 / 안내 중 / 끝 판정. 순수 Kotlin |
+| `GuideService.kt` | 창밖 안내를 화면과 따로 돌리는 포그라운드 서비스 (위치 → 판정 → 음성) |
 | `geo/Geo.kt` | 거리, 방위각, 좌우 판정 |
 | `navi/NaviGateway.kt` | 내비게이션 접점 인터페이스와 `FakeNavi` |
 | `navi/PleosNavi.kt` | NaviHelper SDK 호출 (SDK 호출은 전부 이 파일) |
