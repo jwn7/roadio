@@ -24,8 +24,12 @@ object LocationSource {
         awaitClose { lm.removeUpdates(l) }
     }
 
-    /** 시연·개발용: 각 지점을 서쪽에서 동쪽으로 지나가는 가짜 주행 */
-    fun simulated(points: List<PassPoint>, stepMs: Long = 1500L): Flow<Fix> = flow {
+    /**
+     * 시연·개발용: 각 지점을 서쪽에서 동쪽으로 지나가는 가짜 주행.
+     * 지점마다 위치 8개를 내보내므로 한 지점에 8 × stepMs 가 걸린다. 다음 지점의 안내가 앞의 음성을 끊으니
+     * 이 시간이 가장 긴 음성(약 22.4초)보다 길어야 한다. 3초 → 24초.
+     */
+    fun simulated(points: List<PassPoint>, stepMs: Long = 3000L): Flow<Fix> = flow {
         for (p in points) {
             for (d in listOf(-3000.0, -2400.0, -1500.0, -900.0, -400.0, 0.0, 300.0, 900.0)) {
                 val (lat, lng) = Geo.offset(p.lat, p.lng, if (d < 0) 270.0 else 90.0, kotlin.math.abs(d))
