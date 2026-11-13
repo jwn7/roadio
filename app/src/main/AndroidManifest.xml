@@ -40,10 +40,14 @@
             </intent-filter>
         </activity>
 
-        <!-- 5~7번 화면(주행): 방향 미지정 = 세로 한 칸, 내비게이션 옆에 놓임. 주행 중 사용 선언 -->
+        <!-- 5~8번 화면(주행): 방향 미지정 = 세로 한 칸, 내비게이션 옆에 놓임. 주행 중 사용 선언.
+             계획 화면과 다른 작업(task)으로 띄운다. 같은 작업 안에서 열면 Pleos 홈 화면이 이 창을
+             작업의 첫 화면(PlanActivity, 가로 두 칸)으로 보고 내비게이션을 가린다(docs/verify.md 5차 실행). -->
         <activity
             android:name=".DriveActivity"
-            android:exported="false">
+            android:exported="false"
+            android:taskAffinity="app.roadio.drive"
+            android:launchMode="singleTask">
             <meta-data android:name="distractionOptimized" android:value="true" />
         </activity>
 

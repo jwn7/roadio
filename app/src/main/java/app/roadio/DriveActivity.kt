@@ -79,6 +79,9 @@ class DriveActivity : ComponentActivity() {
         finish()
     }
 
+    override fun onStart() { super.onStart(); visible = true }
+    override fun onStop() { visible = false; super.onStop() }
+
     override fun onDestroy() {
         // 사용자가 화면을 닫을 때만 안내를 끝낸다. 시스템이 화면을 정리한 경우에는 안내가 이어진다.
         if (isFinishing) {
@@ -95,6 +98,9 @@ class DriveActivity : ComponentActivity() {
 
         /** 주행 화면이 열려 있는 경로 id. 안내가 끝난 뒤에도 화면을 닫기 전까지는 값이 남는다 */
         var openRoute: String? = null
+            private set
+        /** 주행 화면이 지금 보이는가. 보이는 동안에는 서비스가 내비게이션 위 카드를 띄우지 않는다 */
+        var visible = false
             private set
         /** Pleos Connect v2.1.0 에뮬레이터의 내비게이션 앱 (adb 로 확인) */
         private const val NAVI_PACKAGE = "ai.umos.maps.android.navigation.app"

@@ -36,7 +36,12 @@
     {
       "file": "app/src/main/java/app/roadio/GuideService.kt",
       "pattern": "^class GuideService : Service\\(\\)",
-      "description": "**안내는 화면이 아니라 서비스가 돌린다.** 안내 시작을 누르면 내비가 앞으로 나와 우리 화면이 가려지고, 몇 초 뒤 시스템이 가려진 앱의 프로세스를 얼린다. 포그라운드 서비스는 얼리지 않으므로 여기서 위치 → 판정(`DriveEngine`) → 음성(`Narrator`)을 돌린다.\n\n- `state`: 지금 안내 상태(`StateFlow<DriveState?>`). `DriveActivity`는 이 값을 보고 그리기만 한다\n- `activeRoute`: 안내 중인 경로 id. `PlanActivity`가 이 값을 보고, 안내 중이면 주행 화면으로 보낸다\n- `LAST_AUDIO_MS` = 30000: 마지막 지점을 지난 뒤 마지막 음성이 끝날 시간을 두고 서비스를 내린다\n\n예: 산 경로 시작 → `activeRoute = \"mountain\"`, `state = Approaching(0, 장수대, …)` → 600m 안에 들어오면 `Guiding(0, 장수대)`과 함께 음성 1회.\n\n실제로 동결을 피하는지는 에뮬레이터 확인 전이다(`docs/verify.md`)."
+      "description": "**안내는 화면이 아니라 서비스가 돌린다.** 안내 시작을 누르면 내비가 앞으로 나와 우리 화면이 가려지고, 몇 초 뒤 시스템이 가려진 앱의 프로세스를 얼린다. 포그라운드 서비스는 얼리지 않으므로 여기서 위치 → 판정(`DriveEngine`) → 음성(`Narrator`)을 돌린다.\n\n- `state`: 지금 안내 상태(`StateFlow<DriveState?>`). `DriveActivity`는 이 값을 보고 그리기만 한다\n- `activeRoute`: 안내 중인 경로 id. `PlanActivity`가 이 값을 보고, 안내 중이면 주행 화면으로 보낸다\n- `LAST_AUDIO_MS` = 30000: 마지막 지점을 지난 뒤 마지막 음성이 끝날 시간을 두고 서비스를 내린다\n\n예: 산 경로 시작 → `activeRoute = \"mountain\"`, `state = Approaching(0, 장수대, …)` → 600m 안에 들어오면 `Guiding(0, 장수대)`과 함께 음성 1회.\n\n에뮬레이터에서 내비가 앞에 있는 동안 음성 5개가 모두 나오는 것을 확인했다(`docs/verify.md` 3차 실행)."
+    },
+    {
+      "file": "app/src/main/java/app/roadio/GuideService.kt",
+      "pattern": "private fun post\\(routeId: String, title: String, text: String",
+      "description": "**내비 위에 얹히는 층 = 헤드업 알림.** 안내 시작 뒤에는 내비가 화면을 차지한다. 달리는 동안 이 앱이 보이는 곳은 이 카드다. Pleos 가 화면 맨 위 층에 그려서 어떤 앱이 앞에 있어도 보인다.\n\n- `CARD_CHANNEL` = \"point\", 중요도 HIGH(이래야 화면 위로 뜬다), 소리 없음(소리는 `Narrator`가 낸다)\n- `CATEGORY_NAVIGATION`: Pleos 알림 서비스가 헤드업으로 띄우는 분류\n- `CARD_MS` = 8000: 카드가 내비의 회전 안내 자리를 덮으므로 8초 뒤 스스로 내려간다\n- `DriveActivity.visible`: 주행 화면이 보이는 중이면 띄우지 않는다\n- `point.visit`가 있으면 카드에 \"들르기\" 버튼이 붙고, 누르면 같은 서비스의 `visit()`이 경유지를 추가한다\n\n예: 한계령 600m 앞 → 제목 \"왼쪽 창밖 · 한계령\", 본문 \"해발 약 930미터, 설악산을 넘는 고개입니다.\", 버튼 \"한계령휴게소 들르기\".\n\n카드는 세 번 쓰인다: 안내 시작, 지점마다, 마지막(\"길 위의 여행은 여기까지\"). 알림 권한은 `PlanActivity`가 첫 화면에서 받는다. 근거는 `docs/verify.md` 5차 실행."
     }
   ]
 }

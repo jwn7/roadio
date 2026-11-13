@@ -1,9 +1,12 @@
 package app.roadio
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,6 +27,9 @@ import kotlinx.coroutines.delay
 class PlanActivity : ComponentActivity() {
     private enum class Step { START, FIND, ROUTE }
 
+    // 내비게이션 위 안내 카드는 알림이다. 정차 중인 첫 화면에서 권한을 받아 둔다. 거절해도 앱은 동작한다.
+    private val askNotify = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ThemeSetting.load(this)
@@ -32,10 +38,13 @@ class PlanActivity : ComponentActivity() {
         (GuideService.activeRoute ?: DriveActivity.openRoute)?.let { active ->
             startActivity(
                 Intent(this, DriveActivity::class.java).putExtra(DriveActivity.EXTRA_ROUTE, active)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             )
             finish()
             return
+        }
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            askNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         val set = RouteRepository(this).load()
         val navi = Session.navi(this, set.destination)
@@ -99,10 +108,19 @@ class PlanActivity : ComponentActivity() {
         navi.startRoute(dest, steer.map { Place(it.name, it.lat, it.lng) })
 
         if (route.passPoints.isEmpty()) { finish(); return }                  // 빠른 길: 내비 그대로
+        // 안내 시작 뒤에는 내비게이션이 앞에 남고, 이 앱은 그 위에 카드(헤드업 알림)로 나타난다.
+        // 주행 화면은 카드를 누르거나 앱을 다시 열었을 때 보인다.
+        if (GuideService.canShowCards(this)) {
+            GuideService.start(this, routeId)
+            finish()
+            return
+        }
+        // 알림을 못 띄우면 카드가 안 보이므로 예전처럼 주행 화면을 앞에 띄운다. 자기 작업(task)으로 띄운다.
         startActivity(
             Intent(this, DriveActivity::class.java)
                 .putExtra(DriveActivity.EXTRA_ROUTE, routeId)
                 .putExtra(DriveActivity.EXTRA_WAYPOINTS, steer.size)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         )
         finish()
     }
