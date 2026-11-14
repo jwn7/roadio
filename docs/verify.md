@@ -353,6 +353,28 @@ release 빌드를 새로 설치해 확인했다(Cold boot, 산 경로, 가짜 �
 
 - **release APK(`apk/LQQ_Roadio_release.apk`)는 이 음성 전 빌드다.** 서명 키가 있는 PC에서 다시 빌드해야 한다.
 
+## 2026-11-15 — 에뮬레이터 소리 지직거림 원인과 시연 영상 원본 녹화
+
+### 원인
+- 음성 파일은 깨끗하다. 지직거림은 에뮬레이터가 소리를 만들어 내보내는 경로에서 생기며, PC 스피커 출력과 에뮬레이터 자체 녹화(`adb emu screenrecord`) 양쪽에 들어간다. 녹화·스피커 출력(WASAPI 루프백으로 디지털 녹음)을 원본 음성과 0.25초 조각마다 맞춰 겹쳐 SNR을 재서 확인했다.
+- 에뮬레이터(RAM 4GB)는 남은 메모리 약 200MB, 스왑 약 800MB로 메모리가 부족했고, 커널 CPU를 2~3코어 쓰고 있었다. Pleos 시스템 앱(`ai.umos.drivingview` 약 1.2코어, 내비 약 1코어, `gleoai`, `ambientai`)도 늘 돈다.
+
+### 설정별 비교 (장수대 대사, 에뮬레이터 자체 녹화, 원본 대비)
+| 설정 | SNR 중앙값 | 20dB 이상 조각 |
+|---|---|---|
+| RAM 4GB, winaudio(기본) | 21~31dB | 약 60% |
+| RAM 6GB, DirectSound | 29dB | 83% |
+| RAM 6GB, DirectSound, 타이머 200Hz | 34dB | 85% |
+| RAM 6GB, DirectSound, 타이머 500Hz | 27dB | 82% |
+| RAM 6GB, winaudio, 타이머 200Hz | 28dB | 77% |
+
+(참고: 원본을 64kbps Vorbis로 압축만 한 것은 22dB, 68%)
+
+### 시연 영상 녹화 설정
+- AVD `hw.ramSize=6144`, `hw.cpu.ncore=6`. 실행 전 환경변수 `QEMU_AUDIO_DRV=dsound`, `QEMU_AUDIO_TIMER_PERIOD=200`.
+- 녹화 1920×1080, 녹화 중 터치음 끔(`settings put --user 10 system sound_effects_enabled 0`, 끝나고 1), `gleoai`·`ambientai` 일시 정지.
+- 결과(편집 없음): 다섯 대사 SNR 중앙값 31~37dB, 깨끗한 조각 85~92%. 안내 화면 전환 뒤 0.8~0.9초에 음성 시작. 녹화 소리 최대 -24.7dB(작음). 안내를 시작할 때 `ai.pleos.playground.caas`(Pleos 시스템 음성)가 0.7초 소리를 낸다.
+
 ## 아직 확인하지 못한 것
 
 - [ ] release APK를 새 음성(11-14 대사, Opus 원본)으로 다시 빌드 (서명 키 필요)
