@@ -203,6 +203,17 @@ debug 빌드가 이미 설치되어 있으면 서명이 달라 덮어 설치되�
 
 안내 음성은 `app/src/main/assets/audio/`에 두며, 파일 이름은 JSON의 `audioFile` 값과 같아야 한다. 음성으로 읽는 긴 설명은 `app/src/main/assets/narrations.json`에 있고, 글을 고친 뒤에는 `python tools/make_audio.py`(edge-tts 필요)로 음성을 다시 만든다.
 
+## 데이터와 글꼴 출처
+
+| 대상 | 출처 표기 | 쓴 곳 |
+|---|---|---|
+| 관광 명소 정보 | 한국관광공사 TourAPI (공공데이터포털) | 경로 주변 명소 수집 (경로 구성 스크립트) |
+| 지형 데이터 | Copernicus DEM GLO-90: © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved | 명소가 도로에서 보이는지 시선 계산 (경로 구성 스크립트) |
+| 도로 데이터 | © OpenStreetMap contributors, Open Database License (ODbL). 길찾기 엔진 OSRM | 지점 좌표를 도로선 위로 보정, 좌우 판별, 소요 시간 추정 (경로 구성 스크립트) |
+| 글꼴 | Asta Sans, SIL Open Font License 1.1 (`docs/licenses/AstaSans-OFL.txt`) | 앱 화면 전체 |
+
+`app/src/main/assets/routes_seoul_yangyang.json`은 위 데이터로 만든 결과물이다. 음성 설명(`narrations.json`)은 직접 쓴 글이며, 기획서 6번의 국민여행조사 수치는 문화체육관광부 「국민여행조사」(2024, 2025)에서 인용했다.
+
 ## 현재 범위
 
 - 서울 → 양양 구간, 목적지 양양 낙산해변 한 곳만 지원한다. 산 경로와 바다 경로(각 5개 지점), 빠른 길.
