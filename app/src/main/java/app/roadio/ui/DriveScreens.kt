@@ -96,6 +96,13 @@ fun DriveScreen(
             if (wide) {
                 Column(Modifier.width(600.dp).fillMaxHeight().clip(RoundedCornerShape(24.dp)).background(c.panel).padding(horizontal = 36.dp, vertical = 28.dp)) {
                     if (state is DriveState.Done) PassedList(route) else PointList(route, state.index)
+                    Spacer(Modifier.weight(1f))
+                    // 이 화면이 넓게 떠 있다는 것은 내비게이션을 가리고 있다는 뜻이다. 나란히 놓는 방법을 알려 준다.
+                    // (Pleos 는 앱이 스스로 한 칸으로 줄어드는 방법을 주지 않는다. docs/verify.md 5차·6차 실행)
+                    Text(
+                        "오른쪽 끝의 막대(⋮)를 왼쪽으로 끌면 내비게이션과 나란히 볼 수 있습니다.",
+                        color = c.sub, fontSize = 28.sp, lineHeight = 40.sp, fontWeight = FontWeight.SemiBold, maxLines = 3,
+                    )
                 }
             }
         }
@@ -107,7 +114,8 @@ fun DriveScreen(
 @Composable
 private fun Header(route: ThemeRoute, state: DriveState) {
     val c = LocalPalette.current
-    Row(Modifier.height(56.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.height(56.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        LineIcon.forTheme(route.theme)?.let { LineIcon(it, c.accText, 32.dp, stroke = 2.5f) }
         Text(route.name, color = c.text, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
         // 진행 표시는 본문과 같은 진하기로(흐리면 주행 중에 읽기 어렵다)
         Text("${minOf(state.index + 1, route.passPoints.size)} / ${route.passPoints.size}", color = c.text, fontSize = 30.sp, fontWeight = FontWeight.Bold)
@@ -180,7 +188,11 @@ private fun GuideHead(p: PassPoint) {
         if (right) SideArrow(p.side, 144, 88, inverted = true)
     }
     Spacer(Modifier.height(40.dp))
-    Text(p.name, color = c.text, fontSize = 104.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+        Text(p.name, color = c.text, fontSize = 104.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, modifier = Modifier.weight(1f))
+        // 음성이 나오는 중임을 알리는 표시. 움직이지 않는다.
+        LineIcon(LineIcon.SPEAKER, c.accText, 56.dp, stroke = 2.2f)
+    }
     Text(p.guideText, color = c.text, fontSize = 36.sp, lineHeight = 50.sp, fontWeight = FontWeight.SemiBold, maxLines = 3, modifier = Modifier.padding(top = 16.dp))
 }
 

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.sp
 /*
  * 치수는 시안의 px 값을 그대로 dp/sp 로 옮겼다(앱 창 1700x1184 기준).
  * 에뮬레이터에서 크기가 다르게 보이면 이 파일과 각 화면의 숫자를 같은 비율로 조정한다.
- * 글꼴: 시안은 Asta Sans. res/font 에 파일을 넣고 FontFamily 로 지정하면 된다(지금은 시스템 글꼴).
+ * 글꼴: 시안과 같은 Asta Sans. Theme.kt 의 RoadioTheme 이 모든 Text 에 입힌다.
  */
 
 @Composable

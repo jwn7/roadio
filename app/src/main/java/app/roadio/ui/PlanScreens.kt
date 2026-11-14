@@ -49,10 +49,10 @@ val THEMES = listOf("mountain" to "산·자연", "sea" to "바다", "history" to
 
 /** 전체 지도 위에 왼쪽 패널(640)을 얹는 가로 화면 공통 틀 */
 @Composable
-private fun PlanFrame(set: RouteSet, selected: ThemeRoute?, panel: @Composable ColumnScope.() -> Unit) {
+private fun PlanFrame(set: RouteSet, selected: ThemeRoute?, candidates: List<PassPoint> = emptyList(), panel: @Composable ColumnScope.() -> Unit) {
     val c = LocalPalette.current
     Box(Modifier.fillMaxSize().background(c.map)) {
-        RouteMap(set.origin, set.destination, selected, Modifier.fillMaxSize().padding(start = 700.dp, top = 80.dp, end = 40.dp, bottom = 80.dp))
+        RouteMap(set.origin, set.destination, selected, Modifier.fillMaxSize().padding(start = 700.dp, top = 80.dp, end = 40.dp, bottom = 80.dp), candidates)
         Column(
             Modifier.padding(32.dp).width(640.dp).fillMaxHeight()
                 .clip(RoundedCornerShape(24.dp)).background(c.panel).padding(40.dp),
@@ -72,7 +72,10 @@ private fun DestinationHeader(dest: Place, onBack: (() -> Unit)? = null, onToggl
             Spacer(Modifier.width(4.dp))
         }
         Column(Modifier.weight(1f)) {
-            Text("목적지", color = c.sub, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                LineIcon(LineIcon.DESTINATION, c.sub, 28.dp)
+                Text("목적지", color = c.sub, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
+            }
             Text(dest.name, color = c.text, fontSize = 60.sp, fontWeight = FontWeight.ExtraBold)
         }
         if (onToggleTheme != null) {
@@ -123,8 +126,9 @@ fun StartScreen(set: RouteSet, dest: Place, picked: Set<String>, onToggle: (Stri
             val on = available && id in picked
             Row(
                 Modifier.fillMaxWidth().height(120.dp).then(if (available) Modifier.clickable { onToggle(id) } else Modifier),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.dp),
             ) {
+                LineIcon.forTheme(id)?.let { LineIcon(it, if (available) c.text else c.sub.copy(alpha = 0.6f), 48.dp, stroke = 2.2f) }
                 Text(
                     name, color = if (available) c.text else c.sub.copy(alpha = 0.6f), fontSize = 36.sp,
                     fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold, modifier = Modifier.weight(1f),
@@ -155,7 +159,9 @@ fun StartScreen(set: RouteSet, dest: Place, picked: Set<String>, onToggle: (Stri
 fun FindScreen(set: RouteSet, dest: Place, picked: Set<String>, step: Int, onCancel: () -> Unit) {
     val c = LocalPalette.current
     val steps = listOf("주변 명소 찾기", "창밖으로 보이는지 확인", "경로 만들기")
-    PlanFrame(set, null) {
+    // 첫 단계("주변 명소 찾기")가 끝나면 고른 테마의 지점들을 지도에 후보로 찍는다.
+    val found = if (step >= 1) set.routes.filter { it.theme in picked }.flatMap { it.passPoints }.distinctBy { it.id } else emptyList()
+    PlanFrame(set, null, found) {
         DestinationHeader(dest, onBack = onCancel)
         Text(THEMES.filter { it.first in picked }.joinToString(", ") { it.second }, color = c.sub, fontSize = 28.sp, modifier = Modifier.padding(top = 4.dp))
         // 진행 막대(정지 화면에서만 보이는 화면이라 단순 표시)

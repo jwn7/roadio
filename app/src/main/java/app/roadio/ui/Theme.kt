@@ -7,7 +7,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.font.FontWeight
+import app.roadio.R
 
 /** 디자인 시안의 색. Pleos 공식 색상값을 받으면 여기만 바꾼다. */
 data class Palette(
@@ -53,7 +61,23 @@ object ThemeSetting {
 
 val LocalPalette = staticCompositionLocalOf { Light }
 
+/**
+ * 시안의 글꼴 Asta Sans (SIL Open Font License, docs/licenses/AstaSans-OFL.txt).
+ * res/font/asta_sans.ttf 는 굵기를 축으로 가진 가변 글꼴 하나다. 화면에서 쓰는 굵기 네 가지를 같은 파일에서 뽑는다.
+ */
+@OptIn(ExperimentalTextApi::class)
+val AstaSans = FontFamily(
+    listOf(FontWeight.Normal, FontWeight.SemiBold, FontWeight.Bold, FontWeight.ExtraBold).map { w ->
+        Font(R.font.asta_sans, weight = w, variationSettings = FontVariation.Settings(FontVariation.weight(w.weight)))
+    }
+)
+
 @Composable
 fun RoadioTheme(content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalPalette provides if (ThemeSetting.dark) Dark else Light, content = content)
+    // 글꼴을 따로 지정하지 않은 모든 Text 가 Asta Sans 로 그려진다.
+    CompositionLocalProvider(
+        LocalPalette provides if (ThemeSetting.dark) Dark else Light,
+        LocalTextStyle provides TextStyle(fontFamily = AstaSans),
+        content = content,
+    )
 }

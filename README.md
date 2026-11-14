@@ -57,7 +57,8 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 2. 테마를 고르고 "경로 찾기"를 누른다. 빠른 길과 테마 경로가 소요 시간, 지나가는 지점과 함께 표시된다.
 3. 경로를 고르고 "안내 시작"을 누른다. 앱이 목적지와 경유지를 내비게이션에 넘기고, 화면은 내비게이션으로 바뀐다. 그 위에 "산 경로 안내를 시작합니다" 카드가 뜬다.
 4. 지점에 가까워지면 내비게이션 위로 "오른쪽 창밖 · 한계령" 카드가 뜨고 음성 안내가 나온다. 카드의 "들르기"를 누르면 해당 장소가 경유지로 추가된다.
-5. 카드를 누르거나 하단 바에서 Roadio를 열면 주행 화면(다음 지점, 거리, 지점 목록)이 보인다. 이 상태에서 화면 오른쪽 끝의 창 막대(⋮)를 왼쪽으로 끌면 Roadio와 내비게이션이 한 칸씩 나란히 놓인다.
+5. 카드를 누르거나 하단 바에서 Roadio를 열면 주행 화면(다음 지점, 거리, 지점 목록)이 보인다.
+6. 내비게이션과 나란히 보려면 화면 오른쪽 끝의 창 막대(⋮)를 왼쪽으로 끈다. 두 앱 사이의 막대를 한 번 누르면 자리가 바뀌어 **내비게이션이 가운데, Roadio가 오른쪽 옆**에 놓인다. 이것이 주행 화면의 기준 배치다(`docs/screenshots/5-drive-beside-navi.png`).
 
 가짜 주행(기본 설정)은 지점 하나에 약 24초, 산 경로 전체에 약 2분 30초가 걸린다.
 
@@ -151,7 +152,9 @@ debug 빌드가 이미 설치되어 있으면 서명이 달라 덮어 설치되�
 | `navi/PleosNavi.kt` | NaviHelper SDK 호출 (SDK 호출은 전부 이 파일) |
 | `navi/LocationSource.kt` | GPS 또는 가짜 주행 |
 | `audio/Narrator.kt` | 안내 음성. 녹음 파일이 있으면 재생, 없으면 TTS |
-| `ui/*` | Compose 화면 |
+| `ui/*` | Compose 화면. 색과 글꼴은 `Theme.kt`, 선 아이콘은 `LineIcon.kt`, 개략 지도는 `RouteMap.kt` |
+
+글꼴은 Asta Sans(SIL Open Font License 1.1, `docs/licenses/AstaSans-OFL.txt`)를 `app/src/main/res/font/`에 넣어 쓴다.
 
 경로는 모두 `app/src/main/java/app/roadio/` 아래다. `.tours/`에는 코드를 순서대로 읽을 수 있는 CodeTour 투어가 있다.
 

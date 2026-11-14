@@ -63,7 +63,7 @@ class GuideService : Service() {
         if (route == null || route.passPoints.isEmpty()) { stopSelf(); return START_NOT_STICKY }
         points = route.passPoints
         destinationName = RouteRepository(this).load().destination.name
-        post(id, "${route.name} 안내를 시작합니다", "첫 지점은 ${route.passPoints.first().name}입니다. 가까워지면 알려 드립니다.")
+        post(id, "${route.name} 안내를 시작합니다", "첫 지점은 ${route.passPoints.first().name}입니다. 카드를 누르면 주행 화면이 열립니다.")
         _state.value = DriveState.Approaching(0, route.passPoints.first(), 0)
         if (useGps && !located) return START_NOT_STICKY                              // 권한을 받으면 화면이 다시 start 를 부른다
 
