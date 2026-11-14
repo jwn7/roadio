@@ -303,9 +303,15 @@ release 빌드를 새로 설치해 확인했다(Cold boot, 산 경로, 가짜 �
 - 경로 결과 화면의 시간(서울시청 출발, OSRM 추정)과 내비게이션 시간은 출발지와 계산 방식이 달라 맞지 않는다. 빠른 길은 `requestTrip`으로 내비게이션 값을 받을 수 있지만, 경유지를 포함한 테마 경로 전체 시간은 안내를 시작하기 전에 받을 방법을 찾지 못했다.
 - 측정 중 에뮬레이터 시스템 서비스가 한 번 재시작되었다(`Can't find service: activity`). 그 사이의 측정값은 버렸다.
 
+## 2026-11-14 — release APK 다시 빌드, 팀명 LQQ로 정정
+
+- 7차의 `DriveEngine` 수정(나갈 때 800m)이 들어간 코드로 release APK를 다시 빌드했다. 단위 테스트 8개 통과.
+- 팀명이 LQQ여서 APK 이름을 `apk/LQQ_Roadio_release.apk`로 바꾸고, 서명 인증서도 `CN=LQQ, O=LQQ, C=KR`로 새로 만들었다(SHA-256 `dd00a372…aeba1d`). 이전 LLQ 키는 `roadio-release.jks`, `keystore-llq.properties`로 남겨 두었다(둘 다 저장소 제외).
+- 인증서가 바뀌었으므로 이전에 설치한 Roadio는 지워야 새 APK가 설치된다(`adb uninstall app.roadio`).
+
 ## 아직 확인하지 못한 것
 
-- [ ] release APK를 이 수정이 들어간 코드로 다시 빌드 (서명 키 필요)
+- [x] release APK를 이 수정이 들어간 코드로 다시 빌드 (2026-11-14 "release APK 다시 빌드")
 
 - [ ] 들르기 뒤 경유지가 두 곳(한계령, 한계령휴게소) 모두 남는가, 아니면 첫 칸이 바뀌는가 (`getWaypointInfo`로 확인)
 - [ ] 경유지를 그냥 지나칠 때 `onWayPointArrived`가 오는가, 안내가 끊기는가 (실제 위치를 움직여야 확인 가능)

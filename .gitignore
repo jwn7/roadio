@@ -5,7 +5,7 @@ local.properties
 *.iml
 *.jks
 *.keystore
-keystore.properties
+keystore*.properties
 
 CLAUDE.md
 .claude/

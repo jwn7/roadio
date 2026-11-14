@@ -45,7 +45,7 @@ subst R: /d
 
 ### 2. 제출 APK로 시연하기 (빌드 없이)
 
-저장소의 `apk/LLQ_Roadio_release.apk`만 있으면 된다. 아래 순서가 시연 영상과 같은 흐름이다.
+저장소의 `apk/LQQ_Roadio_release.apk`만 있으면 된다. 아래 순서가 시연 영상과 같은 흐름이다.
 
 **준비**
 
@@ -54,7 +54,7 @@ subst R: /d
 
 ```powershell
 adb uninstall app.roadio
-adb install apk\LLQ_Roadio_release.apk
+adb install apk\LQQ_Roadio_release.apk
 ```
 
 3. 내비게이션에 다른 목적지가 잡혀 있으면 **안내 종료**를 누른다. 이 버전은 목적지가 양양 낙산해변인 경우만 지원한다.
@@ -167,10 +167,10 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## APK 파일 위치
 
-`apk/LLQ_Roadio_release.apk` — 서명된 release 빌드 (`app.roadio`, 버전 0.1.0).
+`apk/LQQ_Roadio_release.apk` — 서명된 release 빌드 (`app.roadio`, 버전 0.1.0).
 
 ```bash
-adb install -r apk/LLQ_Roadio_release.apk
+adb install -r apk/LQQ_Roadio_release.apk
 ```
 
 debug 빌드가 이미 설치되어 있으면 서명이 달라 덮어 설치되지 않는다. 먼저 `adb uninstall app.roadio`로 지운다.
