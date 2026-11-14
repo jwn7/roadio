@@ -8,8 +8,11 @@
     python tools/make_audio.py --out DIR  # 다른 폴더에 만든다(미리 들어 볼 때)
     python tools/make_audio.py --finish-only  # 이미 있는 파일에 마무리 처리만 한다
 
-마무리 처리: edge-tts 결과(24kHz, 48kbps, 앞 무음 약 0.22초)를 48kHz, 128kbps 로 다시 저장하고
-앞 무음을 약 0.5초로 늘린다. 재생을 시작하는 순간 출력 장치가 흔들려 생기는 "지지직"이
+받는 형식: edge-tts 는 기본으로 24kHz·48kbps mp3 를 받는다. 이 낮은 비트레이트에서 생긴 거친 성분은
+나중에 다시 저장해도 없어지지 않으므로, 같은 목소리를 Opus(webm) 로 받는다(무료 서비스가 허용하는
+형식 중 가장 좋은 품질. WAV 나 고비트레이트 mp3 는 응답이 오지 않는다. 2026-11-14 시험).
+
+마무리 처리: 받은 소리를 48kHz, 192kbps mp3 로 저장하고 앞 무음을 약 0.5초로 늘린다. 재생을 시작하는 순간 출력 장치가 흔들려 생기는 "지지직"이
 말소리가 아니라 무음 위에 떨어지게 하려는 것이다(docs/verify.md 2026-11-14 음성 앞부분).
 
 설명 글을 고치면 이 스크립트를 다시 돌려야 음성과 글이 맞는다.
@@ -26,6 +29,21 @@ ASSETS = Path(__file__).resolve().parent.parent / "app" / "src" / "main" / "asse
 VOICE = "ko-KR-SunHiNeural"
 RATE = "-5%"  # 달리는 차 안에서 듣는 글이라 조금 천천히
 LEAD_MS = 280  # edge-tts 의 앞 무음(약 220ms)에 더할 무음
+FORMAT = "webm-24khz-16bit-mono-opus"
+
+
+def use_opus():
+    """edge-tts 가 고정해 둔 출력 형식을 Opus 로 바꾼다. 라이브러리가 바뀌어 고칠 곳을 못 찾으면 멈춘다."""
+    import inspect
+    import edge_tts.communicate as c
+    src = inspect.getsource(c)
+    old_fmt = '"outputFormat":"audio-24khz-48kbitrate-mono-mp3"'
+    old_type = 'if content_type not in (b"audio/mpeg", None):'
+    if old_fmt not in src or old_type not in src:
+        sys.exit("edge-tts 버전이 달라 출력 형식을 바꿀 수 없다. edge-tts 7.3.1 에서 시험했다")
+    src = src.replace(old_fmt, f'"outputFormat":"{FORMAT}"').replace(
+        old_type, 'if content_type not in (b"audio/mpeg", b"audio/webm; codecs=opus", b"audio/webm", None):')
+    exec(compile(src, c.__file__, "exec"), c.__dict__)
 
 
 def lines():
@@ -52,11 +70,14 @@ def lines():
 def finish(path: Path):
     """앞 무음을 늘리고 48kHz, 128kbps 모노로 다시 저장한다. 말소리는 바꾸지 않는다."""
     import imageio_ffmpeg
+    src = path.with_suffix(".webm") if path.with_suffix(".webm").exists() else path
     tmp = path.with_suffix(".tmp.mp3")
-    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-v", "error", "-y", "-i", str(path),
-                    "-af", f"adelay={LEAD_MS}", "-ar", "48000", "-ac", "1", "-b:a", "128k",
+    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-v", "error", "-y", "-i", str(src),
+                    "-af", f"adelay={LEAD_MS}", "-ar", "48000", "-ac", "1", "-b:a", "192k",
                     "-map_metadata", "-1", str(tmp)], check=True)
     os.replace(tmp, path)
+    if src != path:
+        src.unlink()
 
 
 async def main(out_dir: Path, finish_only: bool):
@@ -65,7 +86,8 @@ async def main(out_dir: Path, finish_only: bool):
         target = out_dir / Path(audio).name
         if not finish_only:
             import edge_tts
-            await edge_tts.Communicate(text, VOICE, rate=RATE).save(str(target))
+            use_opus()
+            await edge_tts.Communicate(text, VOICE, rate=RATE).save(str(target.with_suffix(".webm")))
         finish(target)
         print(target.name, len(text), "자")
 
