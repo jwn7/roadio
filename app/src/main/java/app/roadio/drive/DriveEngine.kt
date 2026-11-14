@@ -18,7 +18,11 @@ sealed interface DriveState {
  *
  * 규칙
  * 1. 다음 지점까지 거리가 noticeDistanceM 이하가 되면 안내(Guiding)로 바뀐다.
- * 2. 안내 중에 거리가 다시 noticeDistanceM 보다 멀어지면 지나친 것으로 보고 다음 지점으로 넘어간다.
+ * 2. 안내 중에는 거리가 noticeDistanceM + [EXIT_MARGIN_M] 보다 멀어져야 지나친 것으로 보고 다음 지점으로 넘어간다.
+ *
+ * 들어올 때와 나갈 때의 기준을 다르게 두는 이유: 굽은 산길은 지점에 닿기 전에 안내 반경을 살짝 스쳤다가
+ * 다시 벗어나기도 한다(예: 오색약수터 약 1km 전에 568m → 611m). 같은 기준을 쓰면 안내를 켜자마자
+ * "지나침"으로 보고 다음 지점으로 넘어가 버려, 정작 그 지점의 안내가 끊긴다.
  */
 class DriveEngine(private val points: List<PassPoint>) {
     private var index = 0
@@ -28,11 +32,12 @@ class DriveEngine(private val points: List<PassPoint>) {
         while (index < points.size) {
             val p = points[index]
             val d = Geo.distanceM(lat, lng, p.lat, p.lng)
-            if (d <= p.noticeDistanceM) {
+            val limit = if (guiding) p.noticeDistanceM + EXIT_MARGIN_M else p.noticeDistanceM
+            if (d <= limit) {
                 guiding = true
                 return DriveState.Guiding(index, p)
             }
-            if (guiding) {            // 안내하던 지점을 벗어남 → 다음 지점으로
+            if (guiding) {            // 안내하던 지점을 충분히 벗어남 → 다음 지점으로
                 guiding = false
                 index++
                 continue
@@ -40,6 +45,11 @@ class DriveEngine(private val points: List<PassPoint>) {
             return DriveState.Approaching(index, p, d.toInt())
         }
         return DriveState.Done(index)
+    }
+
+    companion object {
+        /** 안내를 끝낼 때 더 벗어나야 하는 거리(m). 가짜 주행은 지점을 900m 지나므로 그보다 작게 둔다 */
+        const val EXIT_MARGIN_M = 200
     }
 }
 
