@@ -1,7 +1,8 @@
 """안내 음성 만들기: narrations.json 의 긴 설명 → assets/audio/*.mp3
 
-읽는 글은 "{왼쪽|오른쪽} 창밖, {이름}. {긴 설명}" 이다. 방향과 이름, 파일 이름은
-경로 JSON(routes_seoul_yangyang.json)의 side, name, audioFile 에서 가져온다.
+읽는 글은 narrations.json 의 대사 그대로다(방향과 이름이 문장 안에 들어 있다). 파일 이름은
+경로 JSON(routes_seoul_yangyang.json)의 audioFile 에서 가져오고, 대사 앞 두 문장의 방향(왼쪽/오른쪽)과
+지명이 경로 JSON 의 side, name 과 맞는지 검사한다.
 
     pip install edge-tts imageio-ffmpeg
     python tools/make_audio.py            # 전부 다시 만든다
@@ -9,10 +10,11 @@
     python tools/make_audio.py --finish-only  # 이미 있는 파일에 마무리 처리만 한다
 
 받는 형식: edge-tts 는 기본으로 24kHz·48kbps mp3 를 받는다. 이 낮은 비트레이트에서 생긴 거친 성분은
-나중에 다시 저장해도 없어지지 않으므로, 같은 목소리를 Opus(webm) 로 받는다(무료 서비스가 허용하는
-형식 중 가장 좋은 품질. WAV 나 고비트레이트 mp3 는 응답이 오지 않는다. 2026-11-14 시험).
+나중에 다시 저장해도 없어지지 않으므로, 같은 목소리를 Opus(webm) 로 받는다. 무료 서비스가 주는 형식은
+24kHz·48kbps mp3, 24kHz·96kbps mp3, 24kHz Opus 뿐이다(48kHz, 192kbps, WAV 는 응답 없음. 2026-11-14 시험).
+받은 파일이 정말 Opus 인지 확인하고, 아니면 멈춘다(형식 바꾸기가 조용히 실패하면 48kbps mp3 가 그대로 온다).
 
-마무리 처리: 받은 소리를 48kHz, 192kbps mp3 로 저장하고 앞 무음을 약 0.5초로 늘린다. 재생을 시작하는 순간 출력 장치가 흔들려 생기는 "지지직"이
+마무리 처리: 받은 소리를 고정밀 리샘플링으로 48kHz 로 바꿔 320kbps mp3 로 저장하고 앞 무음을 약 0.5초로 늘린다. 재생을 시작하는 순간 출력 장치가 흔들려 생기는 "지지직"이
 말소리가 아니라 무음 위에 떨어지게 하려는 것이다(docs/verify.md 2026-11-14 음성 앞부분).
 
 설명 글을 고치면 이 스크립트를 다시 돌려야 음성과 글이 맞는다.
@@ -33,7 +35,10 @@ FORMAT = "webm-24khz-16bit-mono-opus"
 
 
 def use_opus():
-    """edge-tts 가 고정해 둔 출력 형식을 Opus 로 바꾼다. 라이브러리가 바뀌어 고칠 곳을 못 찾으면 멈춘다."""
+    """edge-tts 가 고정해 둔 출력 형식을 Opus 로 바꾼 Communicate 클래스를 돌려준다.
+    라이브러리가 바뀌어 고칠 곳을 못 찾으면 멈춘다.
+    주의: 고친 코드를 모듈에 다시 넣어도 이미 불러온 edge_tts.Communicate 는 옛 코드를 그대로 쓴다.
+    그래서 고친 코드로 새로 만든 클래스를 돌려받아 써야 한다."""
     import inspect
     import edge_tts.communicate as c
     src = inspect.getsource(c)
@@ -42,8 +47,10 @@ def use_opus():
     if old_fmt not in src or old_type not in src:
         sys.exit("edge-tts 버전이 달라 출력 형식을 바꿀 수 없다. edge-tts 7.3.1 에서 시험했다")
     src = src.replace(old_fmt, f'"outputFormat":"{FORMAT}"').replace(
-        old_type, 'if content_type not in (b"audio/mpeg", b"audio/webm; codecs=opus", b"audio/webm", None):')
-    exec(compile(src, c.__file__, "exec"), c.__dict__)
+        old_type, 'if content_type not in (b"audio/mpeg", b"audio/webm; codec=opus", b"audio/webm; codecs=opus", b"audio/webm", None):')  # 서버는 "codec=opus"(단수)로 보낸다(2026-11-14 확인)
+    ns = dict(c.__dict__)
+    exec(compile(src, c.__file__, "exec"), ns)
+    return ns["Communicate"]
 
 
 def lines():
@@ -58,8 +65,13 @@ def lines():
                 continue
             if p["id"] not in narrations:
                 sys.exit(f"narrations.json 에 {p['id']} 가 없다")
-            side = "오른쪽" if p["side"] == "R" else "왼쪽"
-            text = f"{side} 창밖, {p['name']}. {narrations[p['id']]}"
+            side, other = ("오른쪽", "왼쪽") if p["side"] == "R" else ("왼쪽", "오른쪽")
+            text = narrations[p["id"]]
+            head = ".".join(text.split(".")[:2])  # 방향은 앞의 두 문장 안에 있어야 한다
+            if side not in head or other in head:
+                sys.exit(f"{p['id']}: 대사 앞부분의 방향이 경로 JSON({side})과 다르다: {head}")
+            if p["name"].split()[-1] not in text:
+                sys.exit(f"{p['id']}: 대사에 지명 '{p['name'].split()[-1]}' 이 없다")
             if out.setdefault(audio, text) != text:
                 sys.exit(f"{audio}: 경로마다 방향이나 이름이 다르다")
     if not out:
@@ -68,12 +80,18 @@ def lines():
 
 
 def finish(path: Path):
-    """앞 무음을 늘리고 48kHz, 128kbps 모노로 다시 저장한다. 말소리는 바꾸지 않는다."""
+    """앞 무음을 늘리고 48kHz, 320kbps 모노 mp3 로 저장한다. 말소리는 바꾸지 않는다."""
     import imageio_ffmpeg
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     src = path.with_suffix(".webm") if path.with_suffix(".webm").exists() else path
+    if src != path:
+        probe = subprocess.run([ffmpeg, "-hide_banner", "-i", str(src)], capture_output=True, text=True).stderr
+        if "Audio: opus" not in probe:
+            sys.exit(f"{src.name}: Opus 가 아니다(형식 바꾸기 실패). 받은 형식: {probe.split('Audio:')[-1][:40] if 'Audio:' in probe else '?'}")
     tmp = path.with_suffix(".tmp.mp3")
-    subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-v", "error", "-y", "-i", str(src),
-                    "-af", f"adelay={LEAD_MS}", "-ar", "48000", "-ac", "1", "-b:a", "192k",
+    subprocess.run([ffmpeg, "-v", "error", "-y", "-i", str(src),
+                    "-af", f"adelay={LEAD_MS},aresample=48000:filter_size=128:phase_shift=12:cutoff=0.98",
+                    "-ac", "1", "-c:a", "libmp3lame", "-b:a", "320k", "-compression_level", "0",
                     "-map_metadata", "-1", str(tmp)], check=True)
     os.replace(tmp, path)
     if src != path:
@@ -85,9 +103,8 @@ async def main(out_dir: Path, finish_only: bool):
     for audio, text in lines().items():
         target = out_dir / Path(audio).name
         if not finish_only:
-            import edge_tts
-            use_opus()
-            await edge_tts.Communicate(text, VOICE, rate=RATE).save(str(target.with_suffix(".webm")))
+            communicate = use_opus()
+            await communicate(text, VOICE, rate=RATE).save(str(target.with_suffix(".webm")))
         finish(target)
         print(target.name, len(text), "자")
 
